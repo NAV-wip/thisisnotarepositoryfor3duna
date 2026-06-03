@@ -395,7 +395,7 @@ function renderFeed(){
 function txRow(t){
   const c=tipoColor(t.tipo);
   const idx=tx.indexOf(t);
-  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d')||(t.tipo==='adelanto'&&t.abono_dir);
+  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d')||(t.tipo==='adelanto'&&t.abono_dir&&t.reembolsado);
   const valColor=isPos?'var(--green)':'var(--red)';
   const sign=isPos?'+':'−';
   const tipInfo=TIPOS[t.tipo]||{label:t.tipo};
@@ -425,14 +425,15 @@ function renderBalances(){
 
   // 1. Nicolas — 3DUNA le debe (adelantos pendientes)
   const nicAll=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas');
+  // Deuda = todos los adelantos pago-prov que AUN no fueron reembolsados por 3DUNA
+  const nicDeuda=nicAll.filter(t=>!t.abono_dir&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  // Abonos directos pagados reducen la deuda de 3DUNA con Nicolas
+  const nicAbonoPag=nicAll.filter(t=>t.abono_dir&&t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  const nicDebt=nicDeuda-nicAbonoPag;
+  const nicReembolsado=nicAll.filter(t=>!t.abono_dir&&t.reembolsado).reduce((s,t)=>s+t.valor,0);
   const nicPend=nicAll.filter(t=>t.estado==='pendiente');
   const nicPaid=nicAll.filter(t=>t.estado==='pagado');
-  // Deuda 3DUNA→Nicolas: pagó proveedor pendiente de reembolso
-  const nicDeuda=nicPend.filter(t=>!t.abono_dir).reduce((s,t)=>s+t.valor,0);
-  // Descuento: abonos directos YA pagados reducen lo que 3DUNA debe a Nicolas
-  const nicAbonoPag=nicAll.filter(t=>t.abono_dir&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-  const nicDebt=nicDeuda-nicAbonoPag;
-  const nicPaidA=nicPaid.filter(t=>!t.abono_dir).reduce((s,t)=>s+t.valor,0);
+  const nicPaidA=nicReembolsado;
 
   // 2. La Nevera — neto = lo que debe (ventas) MENOS lo que pagó a proveedores por 3DUNA
   const lnCobrar=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
@@ -532,7 +533,7 @@ function balCard(name,color,num,desc,rows,detail){
 // ── RESUMEN ──
 function renderResumen(){
   const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0)
-            +tx.filter(t=>t.tipo==='adelanto'&&t.abono_dir&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+            +tx.filter(t=>t.tipo==='adelanto'&&t.abono_dir&&t.reembolsado).reduce((s,t)=>s+t.valor,0);
   const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
   const saldo=SALDO0+inP-outP;
   const cobrar=tx.filter(t=>t.tipo==='venta'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
@@ -578,7 +579,7 @@ function renderResumen(){
   let bal=SALDO0;const pts=[{x:'Inicio',y:bal}];
   sorted.forEach(t=>{
     if(t.tipo==='venta')bal+=neto(t);
-    if(t.tipo==='adelanto'&&t.abono_dir)bal+=t.valor;
+    if(t.tipo==='adelanto'&&t.abono_dir&&t.reembolsado)bal+=t.valor;
     if(['gasto','adelanto'].includes(t.tipo))bal-=t.valor;
     pts.push({x:t.fecha,y:bal});
   });
@@ -634,7 +635,7 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">¿Ya pagado?</label>${estadoToggle()}</div>
   `,
   adelanto: () => `
-    <div class="fhint">Un socio paga por 3DUNA (gasto) o abona a una deuda directamente (ingreso positivo)</div>
+    <div class="fhint">Un socio paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
     <div class="frow">
       <div class="fg"><label class="fl">¿Quién adelantó?</label>
         <select class="fs" id="f-quien">
@@ -658,7 +659,13 @@ const TYPE_FORMS = {
       <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
       <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
     </div>
-    <div class="fg"><label class="fl">¿Ya le reembolsaron?</label>${estadoToggle('pendiente','Pendiente reembolso','Reembolsado')}</div>
+    <div class="fg"><label class="fl">¿El pago al proveedor fue realizado?</label>${estadoToggle('pagado','Pendiente','Realizado')}</div>
+    <div class="fg" style="margin-top:6px"><label class="fl">¿3DUNA ya le reembolsó?</label>
+      <div class="etog">
+        <button class="etog-btn on-p" id="er-no" onclick="setReemb(false)" style="background:rgba(248,113,113,0.12);color:var(--red);border-color:rgba(248,113,113,0.2)">No reembolsado</button>
+        <button class="etog-btn" id="er-si" onclick="setReemb(true)">Ya reembolsado</button>
+      </div>
+    </div>
   `,
   pago_ln: () => `
     <div class="fhint">La Nevera pagó a un proveedor por cuenta de 3DUNA — se descuenta de lo que debe</div>
@@ -734,6 +741,16 @@ function setE(e){
   $('epg').className='etog-btn'+(e==='pagado'?' on-pg':'');
 }
 
+let newReemb=false;
+function setReemb(r){
+  newReemb=r;
+  const no=$('er-no'),si=$('er-si');
+  if(!no||!si)return;
+  no.className='etog-btn'+(r?'':' on-p');
+  no.style.cssText=r?'':'background:rgba(248,113,113,0.12);color:var(--red);border-color:rgba(248,113,113,0.2)';
+  si.className='etog-btn'+(r?' on-pg':'');
+}
+
 function typeGrid(){
   return `<div class="type-grid">
     ${Object.entries(TIPOS).map(([k,v])=>`
@@ -772,6 +789,8 @@ function openModal(id){
     if($('f-cod'))$('f-cod').value=t.codigo||'';
     if($('f-dir'))$('f-dir').value=t.dir||'';
     setE(t.estado||'pendiente');
+    newReemb=t.reembolsado||false;
+    setTimeout(()=>setReemb(newReemb),0);
   }
   $('modal').classList.add('open');
 }
@@ -783,7 +802,6 @@ async function saveTx(){
   snap();
   const btn=$('sbtn');btn.disabled=true;btn.textContent='Guardando...';
   const dirVal=val('f-dir');
-  // Adelanto tipo "abono directo" es positivo — entra dinero a 3DUNA
   const esAbonoDir=curTipo==='adelanto'&&dirVal==='deuda-dir';
   const entry={
     id:editId||uid(),tipo:curTipo,estado:newEstado,
@@ -794,6 +812,7 @@ async function saveTx(){
     medio:val('f-med'),codigo:val('f-cod'),
     dir:dirVal,
     abono_dir:esAbonoDir,
+    reembolsado:curTipo==='adelanto'?newReemb:undefined,
     created_at:editId?(tx.find(t=>t.id===editId)||{}).created_at:new Date().toISOString()
   };
   if(editId){const i=tx.findIndex(t=>t.id===editId);if(i>-1)tx[i]=entry}
