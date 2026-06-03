@@ -668,25 +668,7 @@ const TYPE_FORMS = {
         <button class="etog-btn" id="er-si" onclick="setReemb(true)">Confirmado</button>
       </div>
     </div>
-    <script>
-      (function(){
-        function updateAdelantoDir(){
-          var dir=document.getElementById('f-dir');
-          var fgProv=document.getElementById('fg-estado-prov');
-          var lbl=document.getElementById('lbl-reemb');
-          if(!dir||!fgProv)return;
-          if(dir.value==='deuda-dir'){
-            fgProv.style.display='none';
-            lbl.textContent='¿El abono ya entró a 3DUNA?';
-          } else {
-            fgProv.style.display='';
-            lbl.textContent='¿3DUNA ya le reembolsó?';
-          }
-        }
-        var d=document.getElementById('f-dir');
-        if(d){d.addEventListener('change',updateAdelantoDir);updateAdelantoDir();}
-      })();
-    </script>
+
   `,
   pago_ln: () => `
     <div class="fhint">La Nevera pagó a un proveedor por cuenta de 3DUNA — se descuenta de lo que debe</div>
@@ -786,10 +768,29 @@ function setTipo(t){
   renderModalBody();
 }
 
+function updateAdelantoDir(){
+  const dir=$('f-dir');
+  const fgProv=$('fg-estado-prov');
+  const lbl=$('lbl-reemb');
+  if(!dir||!fgProv)return;
+  if(dir.value==='deuda-dir'){
+    fgProv.style.display='none';
+    if(lbl)lbl.textContent='¿El abono ya entró a 3DUNA?';
+  } else {
+    fgProv.style.display='';
+    if(lbl)lbl.textContent='¿3DUNA ya le reembolsó?';
+  }
+}
+
 function renderModalBody(){
   newReemb=false;
   $('modal-body').innerHTML=typeGrid()+'<div class="fdivider"></div>'+(TYPE_FORMS[curTipo]?TYPE_FORMS[curTipo]():'');
   const fec=$('f-fec');if(fec)fec.valueAsDate=new Date();
+  const dir=$('f-dir');
+  if(dir&&curTipo==='adelanto'){
+    dir.addEventListener('change',updateAdelantoDir);
+    updateAdelantoDir();
+  }
 }
 
 function openModal(id){
