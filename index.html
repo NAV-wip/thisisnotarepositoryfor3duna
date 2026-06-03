@@ -747,7 +747,7 @@ async function saveTx(){
 }
 
 // ── ACTIONS ──
-async async function toggleEstado(id){
+async function toggleEstado(id){
   snap(); const t=tx.find(t=>t.id===id); if(!t)return;
   t.estado=t.estado==='pendiente'?'pagado':'pendiente';
   // Para adelantos: pagado = reembolsado, pendiente = no reembolsado
