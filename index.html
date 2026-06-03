@@ -618,10 +618,14 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">¿Ya pagado?</label>${estadoToggle()}</div>
   `,
   adelanto: () => `
-    <div class="fhint">El socio paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
+    <div class="fhint">Un socio o La Nevera paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
     <div class="frow">
       <div class="fg"><label class="fl">¿Quién adelantó?</label>
-        <select class="fs" id="f-quien"><option value="nicolas">Nicolás</option><option value="samuel">Samuel</option></select></div>
+        <select class="fs" id="f-quien">
+          <option value="nicolas">Nicolás</option>
+          <option value="samuel">Samuel</option>
+          <option value="la nevera">La Nevera</option>
+        </select></div>
       <div class="fg"><label class="fl">Categoría</label><select class="fs" id="f-cat">${catOptions()}</select></div>
     </div>
     <div class="fg"><label class="fl">¿Qué compró / pagó?</label><input class="fi" type="text" id="f-con" placeholder="Descripción del gasto"></div>
@@ -629,8 +633,11 @@ const TYPE_FORMS = {
       <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
       <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
     </div>
-    <div class="fg"><label class="fl">¿Ya le reembolsaron?</label>${estadoToggle('pendiente','¿Debe','Reembolsado')}</div>
-    <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
+      <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
+    </div>
+    <div class="fg"><label class="fl">¿Ya le reembolsaron?</label>${estadoToggle('pendiente','Pendiente reembolso','Reembolsado')}</div>
   `,
   prestamo: () => `
     <div class="fhint">Movimiento de dinero entre 3DUNA y Samuel</div>
@@ -749,7 +756,7 @@ async function saveTx(){
   const entry={
     id:editId||uid(),tipo:curTipo,estado:newEstado,
     valor:v,iva:parseFloat(val('f-iva'))||0,
-    quien:curTipo==='pago_ln'?'la nevera':val('f-quien'),
+    quien:(curTipo==='pago_ln'||curTipo==='comision')?'la nevera':val('f-quien'),
     categoria:val('f-cat'),
     concepto:val('f-con'),fecha:val('f-fec'),
     medio:val('f-med'),codigo:val('f-cod'),
@@ -842,4 +849,22 @@ async function init(){
 init();
 </script>
 </body>
-</html>
+</html>  comision: () => `
+    <div class="fhint">Comisión entre La Nevera y 3DUNA por referidos de clientes</div>
+    <div class="fg"><label class="fl">Dirección</label>
+      <select class="fs" id="f-dir">
+        <option value="ln-3d">La Nevera refirió cliente → 3DUNA le debe comisión a LN</option>
+        <option value="3d-ln">3DUNA refirió cliente → La Nevera le debe comisión a 3DUNA</option>
+      </select></div>
+    <div class="fg"><label class="fl">Concepto / Proyecto base</label>
+      <input class="fi" type="text" id="f-con" placeholder="¿A qué venta o proyecto aplica?"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor comisión (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
+      <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
+    </div>
+    <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Pagado')}</div>
+  `,
