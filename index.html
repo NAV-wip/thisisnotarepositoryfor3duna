@@ -48,7 +48,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px
 .pg{display:none}.pg.on{display:block}
 
 /* ── FEED ── */
-.filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filters{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;padding:14px;background:var(--s1);border:1px solid var(--b1);border-radius:9px}
+.filter-block{display:flex;align-items:center;gap:12px}
+.filter-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);font-weight:500;width:48px;flex-shrink:0}
+.pill-row{display:flex;gap:5px;flex-wrap:wrap}
 .pill{padding:4px 11px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--b2);background:none;color:var(--t3);font-family:var(--font);transition:all .15s}
 .pill:hover{color:var(--t1)}
 .pill.on{background:var(--s2);color:var(--t1);border-color:var(--b3)}
@@ -176,16 +179,29 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px
     <!-- FEED -->
     <div class="content pg on" id="pg-feed">
       <div class="filters">
-        <input class="srch" type="text" placeholder="Buscar..." id="srch" oninput="renderFeed()">
-        <button class="pill on" data-f="tipo" data-v="" onclick="setPill(this)">Todos</button>
-        <button class="pill" data-f="tipo" data-v="venta" onclick="setPill(this)">Ventas</button>
-        <button class="pill" data-f="tipo" data-v="gasto" onclick="setPill(this)">Gastos</button>
-        <button class="pill" data-f="tipo" data-v="adelanto" onclick="setPill(this)">Adelantos</button>
-        <button class="pill" data-f="tipo" data-v="prestamo" onclick="setPill(this)">Préstamos</button>
-        <button class="pill" data-f="tipo" data-v="comision" onclick="setPill(this)">Comisiones</button>
-        <button class="pill on" data-f="estado" data-v="" onclick="setPill(this)">Todos</button>
-        <button class="pill" data-f="estado" data-v="pendiente" onclick="setPill(this)">Pendiente</button>
-        <button class="pill" data-f="estado" data-v="pagado" onclick="setPill(this)">Pagado</button>
+        <div class="filter-block">
+          <div class="filter-label">Buscar</div>
+          <input class="srch" type="text" placeholder="Concepto, código..." id="srch" oninput="renderFeed()">
+        </div>
+        <div class="filter-block">
+          <div class="filter-label">Tipo</div>
+          <div class="pill-row">
+            <button class="pill on" data-f="tipo" data-v="" onclick="setPill(this)">Todos</button>
+            <button class="pill" data-f="tipo" data-v="venta" onclick="setPill(this)">💰 Ventas</button>
+            <button class="pill" data-f="tipo" data-v="adelanto" onclick="setPill(this)">🤝 Adelantos</button>
+            <button class="pill" data-f="tipo" data-v="gasto" onclick="setPill(this)">🧾 Gastos</button>
+            <button class="pill" data-f="tipo" data-v="prestamo" onclick="setPill(this)">🔄 Préstamos</button>
+            <button class="pill" data-f="tipo" data-v="comision" onclick="setPill(this)">📊 Comisiones</button>
+          </div>
+        </div>
+        <div class="filter-block">
+          <div class="filter-label">Estado</div>
+          <div class="pill-row">
+            <button class="pill on" data-f="estado" data-v="" onclick="setPill(this)">Todos</button>
+            <button class="pill" data-f="estado" data-v="pendiente" onclick="setPill(this)">⏳ Pendiente</button>
+            <button class="pill" data-f="estado" data-v="pagado" onclick="setPill(this)">✓ Pagado</button>
+          </div>
+        </div>
       </div>
       <div id="feed"></div>
     </div>
@@ -235,6 +251,7 @@ const fmt  = n => '$' + Math.round(n).toLocaleString('es-CO');
 const fmtS = n => n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':fmt(n);
 const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const byD  = (a,b) => (b.fecha||'').localeCompare(a.fecha||'');
+const neto = t => t.valor - (t.iva || 0);  // La Nevera retiene el IVA — 3DUNA recibe el neto
 const $    = id => document.getElementById(id);
 const val  = id => ($( id)||{}).value || '';
 
@@ -352,7 +369,7 @@ function txRow(t){
       </div>
     </div>
     <div class="tx-cat">${t.categoria||''}</div>
-    <div class="tx-val" style="color:${valColor}">${sign}${fmt(t.valor)}</div>
+    <div class="tx-val" style="color:${valColor}">${sign}${fmt(displayVal)}${t.iva?`<span style="font-size:9px;color:var(--t3);font-family:var(--font)"> neto</span>`:''}</div>
     <div class="tx-actions">
       <button class="s-btn ${t.estado==='pendiente'?'s-p':'s-pg'}" onclick="toggleE('${t.id}')">${t.estado==='pendiente'?'pendiente':'pagado'}</button>
       <button class="del" onclick="delTx('${t.id}')">×</button>
@@ -373,8 +390,8 @@ function renderBalances(){
   // 2. La Nevera — por cobrar (ventas via LN pendientes)
   const lnCobrar=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
   const lnCobrado=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pagado');
-  const lnDebt=lnCobrar.reduce((s,t)=>s+t.valor,0);
-  const lnPaidA=lnCobrado.reduce((s,t)=>s+t.valor,0);
+  const lnDebt=lnCobrar.reduce((s,t)=>s+neto(t),0);
+  const lnPaidA=lnCobrado.reduce((s,t)=>s+neto(t),0);
 
   // 3. Samuel — préstamos pendientes
   const samPend=tx.filter(t=>t.tipo==='prestamo'&&t.estado==='pendiente');
@@ -386,7 +403,7 @@ function renderBalances(){
   const com3D=tx.filter(t=>t.tipo==='comision'&&t.dir==='3d-ln'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
 
   // 5. Saldo cuenta
-  const inP=tx.filter(t=>['venta'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const inP=tx.filter(t=>['venta'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
   const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
   const saldo=SALDO0+inP-outP;
 
@@ -398,9 +415,14 @@ function renderBalances(){
       (nicPend.length>4?`<div class="bal-more">+${nicPend.length-4} más pendientes</div>`:'' )
     )}
     ${balCard('La Nevera','#a78bfa',lnDebt,
-      lnDebt>0?'Por cobrar a La Nevera':'Todo cobrado',
-      [['Cobrado',fmt(lnPaidA),'var(--green)'],['Por cobrar',fmt(lnDebt),'var(--purple)'],['Ventas',`${lnCobrar.length+lnCobrado.length} items`,'var(--t3)']],
-      lnCobrar.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(t.valor)}</span></div>`).join('')+
+      lnDebt>0?'Por cobrar neto (sin IVA)':'Todo cobrado',
+      [
+        ['Cobrado neto',fmt(lnPaidA),'var(--green)'],
+        ['IVA retenido',fmt(lnCobrado.reduce((s,t)=>s+(t.iva||0),0)+lnCobrar.reduce((s,t)=>s+(t.iva||0),0)),'var(--t3)'],
+        ['Por cobrar neto',fmt(lnDebt),'var(--purple)'],
+        ['Ventas',`${lnCobrar.length+lnCobrado.length} items`,'var(--t3)']
+      ],
+      lnCobrar.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(neto(t))}${t.iva?'<span style="color:var(--t3);font-size:9px"> +IVA '+fmt(t.iva)+'</span>':''}</span></div>`).join('')+
       (lnCobrar.length>4?`<div class="bal-more">+${lnCobrar.length-4} más pendientes</div>`:'')
     )}
     ${balCard('Samuel','#2dd4bf',Math.abs(sam3d-sam3dR),
@@ -431,7 +453,7 @@ function balCard(name,color,num,desc,rows,detail){
 
 // ── RESUMEN ──
 function renderResumen(){
-  const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
   const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
   const saldo=SALDO0+inP-outP;
   const cobrar=tx.filter(t=>t.tipo==='venta'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
@@ -449,7 +471,7 @@ function renderResumen(){
   tx.forEach(t=>{
     const m=t.fecha?t.fecha.slice(0,7):null;if(!m)return;
     if(!months[m])months[m]={in:0,out:0};
-    if(t.tipo==='venta')months[m].in+=t.valor;
+    if(t.tipo==='venta')months[m].in+=neto(t);
     if(['gasto','adelanto'].includes(t.tipo))months[m].out+=t.valor;
   });
   const mk=Object.keys(months).sort();
@@ -476,7 +498,7 @@ function renderResumen(){
   const sorted=[...tx].filter(t=>t.fecha&&t.estado==='pagado').sort((a,b)=>a.fecha.localeCompare(b.fecha));
   let bal=SALDO0;const pts=[{x:'Inicio',y:bal}];
   sorted.forEach(t=>{
-    if(t.tipo==='venta')bal+=t.valor;
+    if(t.tipo==='venta')bal+=neto(t);
     if(['gasto','adelanto'].includes(t.tipo))bal-=t.valor;
     pts.push({x:t.fecha,y:bal});
   });
