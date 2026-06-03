@@ -427,11 +427,16 @@ function renderBalances(){
   const nicDebt=nicPend.reduce((s,t)=>s+t.valor,0);
   const nicPaidA=nicPaid.reduce((s,t)=>s+t.valor,0);
 
-  // 2. La Nevera — por cobrar (ventas via LN pendientes)
+  // 2. La Nevera — neto = lo que debe (ventas) MENOS lo que adelantó (pagos a proveedores)
   const lnCobrar=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
   const lnCobrado=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pagado');
   const lnDebt=lnCobrar.reduce((s,t)=>s+neto(t),0);
   const lnPaidA=lnCobrado.reduce((s,t)=>s+neto(t),0);
+  // Lo que La Nevera adelantó pagando a proveedores por 3DUNA — se descuenta de lo que debe
+  const lnAdelantoPend=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='la nevera'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const lnAdelantoPag=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='la nevera'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  // Neto real: ventas pendientes - adelantos pendientes sin reembolsar
+  const lnNeto=lnDebt-lnAdelantoPend;
 
   // 3. Samuel — neto basado solo en préstamos PENDIENTES
   // Solo lo pendiente determina quién le debe a quién ahora
@@ -462,16 +467,17 @@ function renderBalances(){
       nicPend.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--amber)">${fmt(t.valor)}</span></div>`).join('')+
       (nicPend.length>4?`<div class="bal-more">+${nicPend.length-4} más pendientes</div>`:'' )
     )}
-    ${balCard('La Nevera','#a78bfa',lnDebt,
-      lnDebt>0?'Por cobrar neto (sin IVA)':'Todo cobrado',
+    ${balCard('La Nevera','#a78bfa',Math.abs(lnNeto),
+      lnNeto>0?'La Nevera le debe a 3DUNA (neto)':lnNeto<0?'3DUNA le debe a La Nevera (neto)':'En equilibrio',
       [
-        ['Cobrado neto',fmt(lnPaidA),'var(--green)'],
-        ['IVA retenido',fmt(lnCobrado.reduce((s,t)=>s+(t.iva||0),0)+lnCobrar.reduce((s,t)=>s+(t.iva||0),0)),'var(--t3)'],
-        ['Por cobrar neto',fmt(lnDebt),'var(--purple)'],
-        ['Ventas',`${lnCobrar.length+lnCobrado.length} items`,'var(--t3)']
+        ['Ventas pendientes',fmt(lnDebt),'var(--purple)'],
+        ['Adelantos LN (descuento)',fmt(lnAdelantoPend),'var(--red)'],
+        ['Neto por cobrar',fmt(lnNeto),'var(--amber)'],
+        ['IVA retenido por LN',fmt(lnCobrar.reduce((s,t)=>s+(t.iva||0),0)+lnCobrado.reduce((s,t)=>s+(t.iva||0),0)),'var(--t3)'],
+        ['Ya cobrado',fmt(lnPaidA),'var(--green)'],
       ],
-      lnCobrar.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(neto(t))}${t.iva?'<span style="color:var(--t3);font-size:9px"> +IVA '+fmt(t.iva)+'</span>':''}</span></div>`).join('')+
-      (lnCobrar.length>4?`<div class="bal-more">+${lnCobrar.length-4} más pendientes</div>`:'')
+      lnCobrar.slice(0,3).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(neto(t))}</span></div>`).join('')+
+      (lnAdelantoPend>0?`<div class="bal-item" style="border-top:1px dashed var(--b2);margin-top:4px"><span class="bal-item-con" style="color:var(--red)">Adelantos LN a descontar</span><span class="bal-item-val" style="color:var(--red)">−${fmt(lnAdelantoPend)}</span></div>`:'')
     )}
     ${balCard('Samuel','#2dd4bf',Math.abs(samNeto),
       samNeto>0?'Samuel le debe a 3DUNA':samNeto<0?'3DUNA le debe a Samuel':'En equilibrio',
