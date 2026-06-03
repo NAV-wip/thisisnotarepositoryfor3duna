@@ -440,7 +440,9 @@ function renderBalances(){
   const nicDeuda=nicAll.filter(t=>t.dir!=='deuda-dir'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
   // Abonos directos CONFIRMADOS reducen la deuda
   const nicAbono=nicAll.filter(t=>t.dir==='deuda-dir'&&t.reembolsado===true).reduce((s,t)=>s+t.valor,0);
-  const nicDebt=nicDeuda-nicAbono;
+  // Ventas vía Nicolás YA PAGADAS — Nicolas cobró y debe pasarle a 3DUNA, reduce deuda
+  const nicVentasPag=tx.filter(t=>t.tipo==='venta'&&t.quien==='nicolas'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
+  const nicDebt=nicDeuda-nicAbono-nicVentasPag;
   const nicReemb=nicAll.filter(t=>t.dir!=='deuda-dir'&&t.reembolsado).reduce((s,t)=>s+t.valor,0);
 
   // ── La Nevera ──
@@ -475,9 +477,14 @@ function renderBalances(){
     .map(t=>'<div class="bal-item"><span class="bal-item-con">'+t.concepto+'</span><span class="bal-item-val" style="color:var(--purple)">'+fmt(neto(t))+'</span></div>').join('');
 
   $('bal-grid').innerHTML=
-    balCard('Nicolás','#fbbf24',nicDebt,
-      nicDebt>0?'3DUNA le debe reembolsar':nicDebt<0?'Nicolas le debe a 3DUNA':'Al día',
-      [['Por reembolsar',fmt(nicDeuda),'var(--amber)'],['Abonos confirmados',fmt(nicAbono),'var(--green)'],['Neto',fmt(nicDebt),nicDebt>0?'var(--amber)':'var(--green)'],['Ya reembolsado',fmt(nicReemb),'var(--t3)']],
+    balCard('Nicolás','#fbbf24',Math.abs(nicDebt),
+      nicDebt>0?'3DUNA le debe a Nicolás':nicDebt<0?'Nicolás le debe a 3DUNA':'Al día',
+      [
+        ['Adelantos pendientes reembolso',fmt(nicDeuda),'var(--amber)'],
+        ['Ventas cobradas vía Nicolás',fmt(nicVentasPag),'var(--green)'],
+        ['Abonos directos confirmados',fmt(nicAbono),'var(--green)'],
+        ['Neto',fmt(Math.abs(nicDebt)),nicDebt>0?'var(--amber)':'var(--green)'],
+      ],
       nicItems)+
     balCard('La Nevera','#a78bfa',Math.abs(lnNeto),
       lnNeto>0?'La Nevera le debe a 3DUNA':lnNeto<0?'3DUNA le debe a La Nevera':'En equilibrio',
