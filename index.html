@@ -584,7 +584,11 @@ const TYPE_FORMS = {
     <div class="fhint">El cliente paga a 3DUNA — directo o a través de La Nevera</div>
     <div class="frow">
       <div class="fg"><label class="fl">¿Quién paga?</label>
-        <select class="fs" id="f-quien"><option value="cliente">Cliente directo</option><option value="la nevera">La Nevera</option><option value="nicolas">Vía Nicolás</option></select></div>
+        <select class="fs" id="f-quien">
+          <option value="cliente">Cliente directo</option>
+          <option value="la nevera">La Nevera</option>
+          <option value="nicolas">Vía Nicolás</option>
+        </select></div>
       <div class="fg"><label class="fl">Categoría</label>
         <select class="fs" id="f-cat">${catOptions()}</select></div>
     </div>
@@ -626,9 +630,14 @@ const TYPE_FORMS = {
           <option value="samuel">Samuel</option>
           <option value="la nevera">La Nevera</option>
         </select></div>
-      <div class="fg"><label class="fl">Categoría</label><select class="fs" id="f-cat">${catOptions()}</select></div>
+      <div class="fg"><label class="fl">Tipo de adelanto</label>
+        <select class="fs" id="f-dir">
+          <option value="pago-prov">Pagó a un proveedor por 3DUNA</option>
+          <option value="deuda-dir">Abonó directo a una deuda de 3DUNA</option>
+        </select></div>
     </div>
-    <div class="fg"><label class="fl">¿Qué compró / pagó?</label><input class="fi" type="text" id="f-con" placeholder="Descripción del gasto"></div>
+    <div class="fg"><label class="fl">Categoría</label><select class="fs" id="f-cat">${catOptions()}</select></div>
+    <div class="fg"><label class="fl">¿Qué pagó / abonó?</label><input class="fi" type="text" id="f-con" placeholder="Descripción del gasto o deuda abonada"></div>
     <div class="frow">
       <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
       <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
@@ -638,21 +647,6 @@ const TYPE_FORMS = {
       <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
     </div>
     <div class="fg"><label class="fl">¿Ya le reembolsaron?</label>${estadoToggle('pendiente','Pendiente reembolso','Reembolsado')}</div>
-  `,
-  prestamo: () => `
-    <div class="fhint">Movimiento de dinero entre 3DUNA y Samuel</div>
-    <div class="fg"><label class="fl">Dirección del préstamo</label>
-      <select class="fs" id="f-dir">
-        <option value="3d-sam">3DUNA le da plata a Samuel</option>
-        <option value="sam-3d">Samuel le devuelve / da plata a 3DUNA</option>
-      </select></div>
-    <div class="fg"><label class="fl">Concepto</label><input class="fi" type="text" id="f-con" placeholder="Préstamo, retiro, devolución..."></div>
-    <div class="frow">
-      <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
-      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
-    </div>
-    <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="EFECTI">Efectivo</option><option value="TRANSF">Transferencia</option></select></div>
-    <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Completado')}</div>
   `,
   pago_ln: () => `
     <div class="fhint">La Nevera pagó a un proveedor por cuenta de 3DUNA — se descuenta de lo que debe</div>
@@ -669,18 +663,41 @@ const TYPE_FORMS = {
       <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Factura, ref..."></div>
     </div>
     <div class="fg"><label class="fl">¿Ya fue reconocido / descontado?</label>${estadoToggle('pendiente','Pendiente','Descontado')}</div>
-  \`,
-  comision: () => \`
-    <div class="fhint">Comisión entre La Nevera y 3DUNA por referidos</div>
+  `,
+  prestamo: () => `
+    <div class="fhint">Movimiento de dinero entre 3DUNA y Samuel</div>
+    <div class="fg"><label class="fl">Dirección del préstamo</label>
+      <select class="fs" id="f-dir">
+        <option value="3d-sam">3DUNA le da plata a Samuel</option>
+        <option value="sam-3d">Samuel le devuelve / da plata a 3DUNA</option>
+      </select></div>
+    <div class="fg"><label class="fl">Concepto</label><input class="fi" type="text" id="f-con" placeholder="Préstamo, retiro, devolución..."></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="EFECTI">Efectivo</option><option value="TRANSF">Transferencia</option></select></div>
+      <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
+    </div>
+    <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Completado')}</div>
+  `,
+  comision: () => `
+    <div class="fhint">Comisión entre La Nevera y 3DUNA por referidos de clientes</div>
     <div class="fg"><label class="fl">Dirección</label>
       <select class="fs" id="f-dir">
-        <option value="ln-3d">La Nevera refirió cliente → Le deben comisión a La Nevera</option>
-        <option value="3d-ln">3DUNA refirió cliente → Le deben comisión a 3DUNA</option>
+        <option value="ln-3d">La Nevera refirió cliente → 3DUNA le debe comisión a LN</option>
+        <option value="3d-ln">3DUNA refirió cliente → La Nevera le debe comisión a 3DUNA</option>
       </select></div>
-    <div class="fg"><label class="fl">Concepto / Proyecto base</label><input class="fi" type="text" id="f-con" placeholder="¿A qué venta aplica?"></div>
+    <div class="fg"><label class="fl">Concepto / Proyecto base</label>
+      <input class="fi" type="text" id="f-con" placeholder="¿A qué venta o proyecto aplica?"></div>
     <div class="frow">
       <div class="fg"><label class="fl">Valor comisión (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
       <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
+      <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
     </div>
     <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Pagado')}</div>
   `,
@@ -849,22 +866,4 @@ async function init(){
 init();
 </script>
 </body>
-</html>  comision: () => `
-    <div class="fhint">Comisión entre La Nevera y 3DUNA por referidos de clientes</div>
-    <div class="fg"><label class="fl">Dirección</label>
-      <select class="fs" id="f-dir">
-        <option value="ln-3d">La Nevera refirió cliente → 3DUNA le debe comisión a LN</option>
-        <option value="3d-ln">3DUNA refirió cliente → La Nevera le debe comisión a 3DUNA</option>
-      </select></div>
-    <div class="fg"><label class="fl">Concepto / Proyecto base</label>
-      <input class="fi" type="text" id="f-con" placeholder="¿A qué venta o proyecto aplica?"></div>
-    <div class="frow">
-      <div class="fg"><label class="fl">Valor comisión (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
-      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
-    </div>
-    <div class="frow">
-      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
-      <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
-    </div>
-    <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Pagado')}</div>
-  `,
+</html>
