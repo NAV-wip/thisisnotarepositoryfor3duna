@@ -424,12 +424,15 @@ function renderBalances(){
   const el=$('bal-grid');
 
   // 1. Nicolas — 3DUNA le debe (adelantos pendientes)
-  // Adelantos nicolas: pago-prov suman deuda, abono-dir la reducen
-  const nicPend=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.estado==='pendiente');
-  const nicPaid=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.estado==='pagado');
-  const nicDebt=nicPend.filter(t=>!t.abono_dir).reduce((s,t)=>s+t.valor,0)
-               -nicPend.filter(t=>t.abono_dir).reduce((s,t)=>s+t.valor,0);
-  const nicPaidA=nicPaid.reduce((s,t)=>s+t.valor,0);
+  const nicAll=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas');
+  const nicPend=nicAll.filter(t=>t.estado==='pendiente');
+  const nicPaid=nicAll.filter(t=>t.estado==='pagado');
+  // Deuda 3DUNA→Nicolas: pagó proveedor pendiente de reembolso
+  const nicDeuda=nicPend.filter(t=>!t.abono_dir).reduce((s,t)=>s+t.valor,0);
+  // Descuento: abonos directos YA pagados reducen lo que 3DUNA debe a Nicolas
+  const nicAbonoPag=nicAll.filter(t=>t.abono_dir&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const nicDebt=nicDeuda-nicAbonoPag;
+  const nicPaidA=nicPaid.filter(t=>!t.abono_dir).reduce((s,t)=>s+t.valor,0);
 
   // 2. La Nevera — neto = lo que debe (ventas) MENOS lo que pagó a proveedores por 3DUNA
   const lnCobrar=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
@@ -469,9 +472,14 @@ function renderBalances(){
   const saldo=SALDO0+inP-outP;
 
   el.innerHTML=`
-    ${balCard('Nicolás','#fbbf24',nicDebt,
-      nicDebt>0?'3DUNA le debe reembolsar':'Al día',
-      [['Reembolsado',fmt(nicPaidA),'var(--green)'],['Por reembolsar',fmt(nicDebt),'var(--amber)'],['Adelantos',`${nicPend.length+nicPaid.length} items`,'var(--t3)']],
+    ${balCard('Nicolás','#fbbf24',Math.max(0,nicDebt),
+      nicDebt>0?'3DUNA le debe reembolsar':nicDebt<0?'Nicolas le debe a 3DUNA':'Al día',
+      [
+        ['Por reembolsar',fmt(nicDeuda),'var(--amber)'],
+        ['Abonos aplicados',fmt(nicAbonoPag),'var(--green)'],
+        ['Neto deuda',fmt(nicDebt),nicDebt>0?'var(--amber)':'var(--green)'],
+        ['Ya reembolsado',fmt(nicPaidA),'var(--t3)'],
+      ],
       nicPend.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--amber)">${fmt(t.valor)}</span></div>`).join('')+
       (nicPend.length>4?`<div class="bal-more">+${nicPend.length-4} más pendientes</div>`:'' )
     )}
