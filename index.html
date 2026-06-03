@@ -14,270 +14,207 @@
   --t1:#eeece6;--t2:#999;--t3:#555;
   --green:#4ade80;--red:#f87171;--amber:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--teal:#2dd4bf;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
-  --r:8px;--r2:12px;
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh}
 
-/* ── LAYOUT ── */
-.shell{display:grid;grid-template-columns:52px 1fr;min-height:100vh}
-.rail{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;position:sticky;top:0;height:100vh}
-.rail-logo{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:1.5px;color:var(--t2);writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--b1);width:100%;text-align:center}
-.rail-btn{width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);font-size:16px;transition:all 0.15s;border:none;background:none;position:relative}
-.rail-btn:hover{color:var(--t1);background:var(--s2)}
-.rail-btn.active{color:var(--t1);background:var(--s3)}
-.rail-btn .tip{position:absolute;left:44px;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:50}
-.rail-btn:hover .tip{opacity:1}
-.rail-foot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--t3)}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.busy{background:var(--amber);animation:pulse 1s infinite}
-.sync-dot.err{background:var(--red)}
+/* layout */
+.shell{display:grid;grid-template-columns:48px 1fr;min-height:100vh}
+.rail{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:2px;position:sticky;top:0;height:100vh}
+.rail-logo{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:1.5px;color:var(--t3);writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--b1);width:100%;text-align:center}
+.rb{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);font-size:15px;transition:all .15s;border:none;background:none;position:relative}
+.rb:hover{color:var(--t1);background:var(--s2)}
+.rb.on{color:var(--t1);background:var(--s3)}
+.rb .tip{position:absolute;left:42px;background:var(--s3);border:1px solid var(--b2);border-radius:5px;padding:3px 8px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:50}
+.rb:hover .tip{opacity:1}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:4px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--t3);cursor:default}
+.sdot.ok{background:var(--green)}
+.sdot.busy{background:var(--amber);animation:pulse 1s infinite}
+.sdot.err{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-.main{display:flex;flex-direction:column;overflow:hidden;height:100vh}
-.topbar{padding:0 20px;height:52px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.page-title{font-size:14px;font-weight:500;color:var(--t2)}
-.spacer{flex:1}
-.btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--t1);font-family:var(--font);transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.main{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:48px;padding:0 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.page-title{font-size:13px;font-weight:500;color:var(--t2)}
+.sp{flex:1}
+.btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--t1);font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .btn:hover{background:var(--b1)}
 .btn:disabled{opacity:.35;cursor:not-allowed}
-.btn-accent{background:var(--t1);color:#0c0c0c;border-color:var(--t1)}
-.btn-accent:hover{background:#d0cec8}
-.btn-green{background:rgba(74,222,128,.12);color:var(--green);border-color:rgba(74,222,128,.25)}
-.btn-green:hover{background:rgba(74,222,128,.2)}
+.btn-a{background:var(--t1);color:#0c0c0c;border-color:var(--t1)}
+.btn-a:hover{background:#d0cec8}
 .content{flex:1;overflow-y:auto;padding:20px}
 
-/* ── PAGES ── */
-.page{display:none}
-.page.active{display:block}
+/* pages */
+.pg{display:none}.pg.on{display:block}
 
 /* ── FEED ── */
-.feed-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.pill{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--b2);background:none;color:var(--t2);font-family:var(--font);transition:all .15s}
-.pill:hover{color:var(--t1);border-color:var(--b3)}
+.filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.pill{padding:4px 11px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--b2);background:none;color:var(--t3);font-family:var(--font);transition:all .15s}
+.pill:hover{color:var(--t1)}
 .pill.on{background:var(--s2);color:var(--t1);border-color:var(--b3)}
-.srch{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:6px 10px;color:var(--t1);font-family:var(--font);font-size:12px;width:200px}
+.srch{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:5px 10px;color:var(--t1);font-family:var(--font);font-size:12px;width:180px}
 .srch::placeholder{color:var(--t3)}
 .srch:focus{outline:none;border-color:var(--b3)}
 
-.tx-group{margin-bottom:20px}
-.tx-group-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin-bottom:8px;font-weight:500}
-.tx-row{display:grid;grid-template-columns:16px 1fr auto auto 90px 80px;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r);border:1px solid transparent;transition:all .15s;cursor:default}
+.tx-group{margin-bottom:18px}
+.tx-group-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:6px;font-weight:500;display:flex;align-items:center;gap:6px}
+.tx-row{display:grid;grid-template-columns:8px 1fr auto auto 88px 100px;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;border:1px solid transparent;transition:background .12s,border-color .12s}
 .tx-row:hover{background:var(--s1);border-color:var(--b1)}
-.tx-indicator{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.tx-main{}
-.tx-concepto{font-size:13px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
-.tx-meta{font-size:11px;color:var(--t3);margin-top:1px}
-.tx-entidad{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;background:var(--s2);color:var(--t2);flex-shrink:0}
-.tx-cat{font-size:10px;color:var(--t3);flex-shrink:0;text-align:right;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tx-valor{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;flex-shrink:0}
-.tx-estado{display:flex;justify-content:flex-end;flex-shrink:0}
-.estado-btn{padding:3px 9px;border-radius:4px;font-size:10px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:all .15s;white-space:nowrap}
-.estado-btn.pendiente{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
-.estado-btn.pendiente:hover{background:rgba(251,191,36,.2)}
-.estado-btn.pagado{background:rgba(74,222,128,.08);color:var(--green);border:1px solid rgba(74,222,128,.15)}
-.estado-btn.pagado:hover{background:rgba(74,222,128,.15)}
-.del-btn{opacity:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px;transition:all .15s}
-.tx-row:hover .del-btn{opacity:1}
-.del-btn:hover{color:var(--red);background:rgba(248,113,113,.1)}
+.tx-bar{width:3px;height:28px;border-radius:2px;flex-shrink:0}
+.tx-body{}
+.tx-con{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.tx-sub{font-size:10px;color:var(--t3);margin-top:1px;display:flex;align-items:center;gap:5px}
+.tx-tag{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:500}
+.tx-cat{font-size:10px;color:var(--t3);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.tx-val{font-family:var(--mono);font-size:12px;font-weight:500;text-align:right;white-space:nowrap}
+.tx-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.s-btn{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.s-p{background:rgba(251,191,36,.08);color:var(--amber);border-color:rgba(251,191,36,.2)}.s-p:hover{background:rgba(251,191,36,.18)}
+.s-pg{background:rgba(74,222,128,.07);color:var(--green);border-color:rgba(74,222,128,.15)}.s-pg:hover{background:rgba(74,222,128,.15)}
+.del{opacity:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:3px;transition:all .15s;line-height:1}
+.tx-row:hover .del{opacity:1}
+.del:hover{color:var(--red)}
 
 /* ── BALANCES ── */
-.bal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:24px}
-.bal-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px}
-.bal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.bal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:24px}
+.bal-card{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:16px;border-top:2px solid}
+.bal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .bal-name{font-size:13px;font-weight:500}
-.bal-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500}
-.bal-number{font-family:var(--mono);font-size:26px;font-weight:500;margin-bottom:4px}
-.bal-sub{font-size:11px;color:var(--t3);margin-bottom:14px}
-.bal-rows{}
-.bal-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--b1);font-size:11px}
-.bal-row-label{color:var(--t3)}
-.bal-row-val{font-family:var(--mono);font-size:11px}
+.bal-count{font-size:10px;color:var(--t3);background:var(--s2);border-radius:4px;padding:2px 7px}
+.bal-num{font-family:var(--mono);font-size:24px;font-weight:500;margin-bottom:2px}
+.bal-desc{font-size:10px;color:var(--t3);margin-bottom:12px}
+.bal-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid var(--b1);font-size:11px}
+.bal-rl{color:var(--t3)}
+.bal-rv{font-family:var(--mono);font-size:11px}
+.bal-items{margin-top:10px;border-top:1px solid var(--b1);padding-top:8px}
+.bal-item{display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;font-size:10px;color:var(--t3);gap:8px}
+.bal-item-con{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.bal-item-val{font-family:var(--mono);flex-shrink:0}
+.bal-more{font-size:10px;color:var(--t3);padding-top:4px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--b3)}
 
 /* ── RESUMEN ── */
-.summary-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.smet{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px}
-.smet-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
-.smet-val{font-family:var(--mono);font-size:20px;font-weight:500}
-.smet-sub{font-size:10px;color:var(--t3);margin-top:3px}
-.charts-grid{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:20px}
-.chart-box{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:16px}
-.chart-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:12px}
+.met-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.met{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:13px}
+.met-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.met-v{font-family:var(--mono);font-size:18px;font-weight:500}
+.met-s{font-size:10px;color:var(--t3);margin-top:2px}
+.chart-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:14px;margin-bottom:14px}
+.chart-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);margin-bottom:10px}
+.chart-row{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:14px}
 
 /* ── MODAL ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
-.overlay.open{display:flex}
-.modal{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r2);width:460px;max-width:95vw;max-height:90vh;overflow-y:auto}
-.modal-head{padding:16px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-size:14px;font-weight:500}
-.modal-x{background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px;border-radius:4px}
-.modal-x:hover{color:var(--t1)}
-.modal-body{padding:18px 20px}
-.modal-foot{padding:12px 20px;border-top:1px solid var(--b1);display:flex;gap:8px;justify-content:flex-end}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:flex-start;justify-content:center;padding-top:60px;overflow-y:auto}
+.ov.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:12px;width:480px;max-width:95vw;margin-bottom:40px}
+.mh{padding:14px 18px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.mt{font-size:14px;font-weight:500}
+.mx{background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
+.mx:hover{color:var(--t1)}
+.mb{padding:16px 18px}
+.mf{padding:12px 18px;border-top:1px solid var(--b1);display:flex;gap:8px;justify-content:flex-end}
 
-/* tipo toggle */
-.ttog{display:flex;border:1px solid var(--b2);border-radius:6px;overflow:hidden;margin-bottom:14px}
-.ttog-btn{flex:1;padding:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:var(--s2);color:var(--t3);border:none;font-family:var(--font);transition:all .15s}
-.ttog-btn.on-i{background:rgba(74,222,128,.15);color:var(--green)}
-.ttog-btn.on-e{background:rgba(248,113,113,.15);color:var(--red)}
+/* type selector */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.type-card{padding:10px 12px;border-radius:7px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:8px}
+.type-card:hover{border-color:var(--b3)}
+.type-card.on{border-width:1.5px}
+.type-ico{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.type-info{}
+.type-name{font-size:12px;font-weight:500;margin-bottom:1px}
+.type-desc{font-size:10px;color:var(--t3);line-height:1.3}
 
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* form */
 .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.fl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3)}
-.fi,.fs{background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:8px 10px;color:var(--t1);font-family:var(--font);font-size:12px;width:100%;transition:border-color .15s}
+.fl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}
+.fi,.fs{background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:7px 10px;color:var(--t1);font-family:var(--font);font-size:12px;width:100%;transition:border-color .15s}
 .fi:focus,.fs:focus{outline:none;border-color:var(--b3)}
 .fs option{background:var(--s1)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fdivider{height:1px;background:var(--b1);margin:6px 0 12px}
+.fhint{font-size:11px;color:var(--t3);margin-top:-6px;margin-bottom:10px;padding:7px 10px;background:var(--s2);border-radius:5px;border-left:2px solid var(--b3)}
 
 /* estado toggle */
-.etog{display:flex;border:1px solid var(--b2);border-radius:6px;overflow:hidden;margin-bottom:10px}
-.etog-btn{flex:1;padding:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:var(--s2);color:var(--t3);border:none;font-family:var(--font);transition:all .15s}
+.etog{display:flex;border:1px solid var(--b2);border-radius:6px;overflow:hidden}
+.etog-btn{flex:1;padding:7px;text-align:center;cursor:pointer;font-size:11px;font-weight:500;background:var(--s2);color:var(--t3);border:none;font-family:var(--font);transition:all .15s}
 .etog-btn.on-p{background:rgba(251,191,36,.12);color:var(--amber)}
-.etog-btn.on-pg{background:rgba(74,222,128,.12);color:var(--green)}
+.etog-btn.on-pg{background:rgba(74,222,128,.1);color:var(--green)}
 
-.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:10px 16px;font-size:12px;z-index:200;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none;max-width:280px}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:9px 14px;font-size:12px;z-index:200;opacity:0;transform:translateY(5px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
-
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:14px;color:var(--t3);font-size:13px;position:fixed;inset:0;background:var(--bg);z-index:300}
-.spinner{width:24px;height:24px;border:2px solid var(--b2);border-top-color:var(--t1);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:48px;color:var(--t3);font-size:13px}
-
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;color:var(--t3);font-size:13px;position:fixed;inset:0;background:var(--bg);z-index:300}
+.spin{width:22px;height:22px;border:2px solid var(--b2);border-top-color:var(--t1);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:48px;color:var(--t3);font-size:12px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 </style>
 </head>
 <body>
 
-<div class="loading" id="loading">
-  <div class="spinner"></div>
-  <span id="load-msg">Conectando...</span>
-</div>
+<div class="loading" id="loading"><div class="spin"></div><span id="lmsg">Conectando...</span></div>
 
 <div class="shell" id="shell" style="display:none">
-  <!-- Rail -->
   <aside class="rail">
     <div class="rail-logo">3DUNA</div>
-    <button class="rail-btn active" id="rb-feed" onclick="gotoPage('feed',this)" title="Feed">
-      ≡<span class="tip">Feed</span>
-    </button>
-    <button class="rail-btn" id="rb-balances" onclick="gotoPage('balances',this)" title="Balances">
-      ⇅<span class="tip">Balances</span>
-    </button>
-    <button class="rail-btn" id="rb-resumen" onclick="gotoPage('resumen',this)" title="Resumen">
-      ◎<span class="tip">Resumen</span>
-    </button>
+    <button class="rb on" id="rb-feed" onclick="goto('feed',this)">≡<span class="tip">Feed</span></button>
+    <button class="rb" id="rb-balances" onclick="goto('balances',this)">◎<span class="tip">Balances</span></button>
+    <button class="rb" id="rb-resumen" onclick="goto('resumen',this)">▣<span class="tip">Resumen</span></button>
     <div class="rail-foot">
-      <button class="rail-btn" onclick="syncNow()" title="Sync"><span style="font-size:13px">↻</span><span class="tip">Sincronizar</span></button>
-      <button class="rail-btn" onclick="undoAction()" id="undo-rb" title="Deshacer"><span style="font-size:12px">↩</span><span class="tip">Deshacer</span></button>
-      <div class="sync-dot" id="sdot" title=""></div>
+      <button class="rb" onclick="syncNow()" title="Sync">↻<span class="tip">Sincronizar</span></button>
+      <button class="rb" id="undo-rb" onclick="doUndo()" style="opacity:.3" title="Deshacer">↩<span class="tip">Deshacer</span></button>
+      <div class="sdot" id="sdot"></div>
     </div>
   </aside>
 
-  <!-- Main -->
   <main class="main">
     <div class="topbar">
-      <span class="page-title" id="page-title">Feed</span>
-      <div class="spacer"></div>
-      <span id="sync-txt" style="font-size:10px;color:var(--t3)"></span>
-      <button class="btn btn-accent" onclick="openModal()">+ Nuevo</button>
+      <span class="page-title" id="ptitle">Feed</span>
+      <div class="sp"></div>
+      <span id="stxt" style="font-size:10px;color:var(--t3)"></span>
+      <button class="btn btn-a" onclick="openModal()">+ Nuevo</button>
     </div>
 
     <!-- FEED -->
-    <div class="content page active" id="page-feed">
-      <div class="feed-filters">
+    <div class="content pg on" id="pg-feed">
+      <div class="filters">
         <input class="srch" type="text" placeholder="Buscar..." id="srch" oninput="renderFeed()">
-        <button class="pill on" data-f="tipo" data-v="" onclick="togglePill(this)">Todos</button>
-        <button class="pill" data-f="tipo" data-v="ingreso" onclick="togglePill(this)">↑ Ingresos</button>
-        <button class="pill" data-f="tipo" data-v="egreso" onclick="togglePill(this)">↓ Egresos</button>
-        <button class="pill on" data-f="estado" data-v="" onclick="togglePill(this)">Todos</button>
-        <button class="pill" data-f="estado" data-v="pendiente" onclick="togglePill(this)">Pendiente</button>
-        <button class="pill" data-f="estado" data-v="pagado" onclick="togglePill(this)">Pagado</button>
-        <select class="srch" style="width:auto" id="f-ent" onchange="renderFeed()">
-          <option value="">Todas las entidades</option>
-          <option>nicolas</option><option>la nevera</option><option>samuel</option><option>cliente</option><option>proveedor</option>
-        </select>
+        <button class="pill on" data-f="tipo" data-v="" onclick="setPill(this)">Todos</button>
+        <button class="pill" data-f="tipo" data-v="venta" onclick="setPill(this)">Ventas</button>
+        <button class="pill" data-f="tipo" data-v="gasto" onclick="setPill(this)">Gastos</button>
+        <button class="pill" data-f="tipo" data-v="adelanto" onclick="setPill(this)">Adelantos</button>
+        <button class="pill" data-f="tipo" data-v="prestamo" onclick="setPill(this)">Préstamos</button>
+        <button class="pill" data-f="tipo" data-v="comision" onclick="setPill(this)">Comisiones</button>
+        <button class="pill on" data-f="estado" data-v="" onclick="setPill(this)">Todos</button>
+        <button class="pill" data-f="estado" data-v="pendiente" onclick="setPill(this)">Pendiente</button>
+        <button class="pill" data-f="estado" data-v="pagado" onclick="setPill(this)">Pagado</button>
       </div>
-      <div id="feed-content"></div>
+      <div id="feed"></div>
     </div>
 
     <!-- BALANCES -->
-    <div class="content page" id="page-balances">
+    <div class="content pg" id="pg-balances">
       <div class="bal-grid" id="bal-grid"></div>
     </div>
 
     <!-- RESUMEN -->
-    <div class="content page" id="page-resumen">
-      <div class="summary-metrics" id="sum-metrics"></div>
-      <div class="charts-grid">
-        <div class="chart-box">
-          <div class="chart-label">Flujo mensual</div>
-          <div style="position:relative;height:200px"><canvas id="ch-mes" role="img" aria-label="Flujo mensual"></canvas></div>
-        </div>
-        <div class="chart-box">
-          <div class="chart-label">Por categoría</div>
-          <div style="position:relative;height:200px"><canvas id="ch-cat" role="img" aria-label="Por categoría"></canvas></div>
-        </div>
+    <div class="content pg" id="pg-resumen">
+      <div class="met-grid" id="met-grid"></div>
+      <div class="chart-row">
+        <div class="chart-wrap"><div class="chart-lbl">Flujo mensual</div><div style="position:relative;height:190px"><canvas id="ch-mes" role="img" aria-label="Flujo mensual"></canvas></div></div>
+        <div class="chart-wrap"><div class="chart-lbl">Por tipo</div><div style="position:relative;height:190px"><canvas id="ch-tipo" role="img" aria-label="Por tipo"></canvas></div></div>
       </div>
-      <div class="chart-box">
-        <div class="chart-label">Balance acumulado</div>
-        <div style="position:relative;height:160px"><canvas id="ch-bal" role="img" aria-label="Balance"></canvas></div>
-      </div>
+      <div class="chart-wrap"><div class="chart-lbl">Balance acumulado cuenta</div><div style="position:relative;height:150px"><canvas id="ch-bal" role="img" aria-label="Balance"></canvas></div></div>
     </div>
   </main>
 </div>
 
 <!-- MODAL -->
-<div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
+<div class="ov" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="modal-title">Nuevo movimiento</div>
-      <button class="modal-x" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="ttog">
-        <button class="ttog-btn on-i" id="ti" onclick="setTipo('ingreso')">↑ Ingreso</button>
-        <button class="ttog-btn" id="te" onclick="setTipo('egreso')">↓ Egreso</button>
-      </div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Categoría</label>
-          <select class="fs" id="n-cat">
-            <option>cotizacion</option><option>reabastecimiento</option><option>inversion drones</option>
-            <option>inversion</option><option>mantenimiento</option><option>nomina empleados</option>
-            <option>prestamo</option><option>cliente referido LN</option><option>referido 3DUNA</option>
-          </select></div>
-        <div class="fg"><label class="fl">Entidad</label>
-          <select class="fs" id="n-ent">
-            <option>nicolas</option><option>la nevera</option><option>samuel</option>
-            <option>cliente</option><option>proveedor</option>
-          </select></div>
-      </div>
-      <div class="fg"><label class="fl">Concepto</label>
-        <input class="fi" type="text" id="n-con" placeholder="Descripción del movimiento"></div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Valor (COP)</label>
-          <input class="fi" type="number" id="n-val" placeholder="0"></div>
-        <div class="fg"><label class="fl">IVA (COP)</label>
-          <input class="fi" type="number" id="n-iva" placeholder="0"></div>
-      </div>
-      <div class="frow">
-        <div class="fg"><label class="fl">Fecha</label>
-          <input class="fi" type="date" id="n-fec"></div>
-        <div class="fg"><label class="fl">Medio</label>
-          <select class="fs" id="n-med">
-            <option value="TRANSF">Transferencia</option>
-            <option value="EFECTI">Efectivo</option>
-          </select></div>
-      </div>
-      <div class="fg"><label class="fl">Estado</label>
-        <div class="etog">
-          <button class="etog-btn on-p" id="ep" onclick="setEstado('pendiente')">Pendiente</button>
-          <button class="etog-btn" id="epg" onclick="setEstado('pagado')">Pagado</button>
-        </div></div>
-      <div class="fg"><label class="fl">Código / Referencia</label>
-        <input class="fi" type="text" id="n-cod" placeholder="COT-XXXXX"></div>
-    </div>
-    <div class="modal-foot">
+    <div class="mh"><div class="mt" id="modal-title">Nuevo movimiento</div><button class="mx" onclick="closeModal()">×</button></div>
+    <div class="mb" id="modal-body"></div>
+    <div class="mf">
       <button class="btn" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-accent" onclick="saveTx()" id="save-btn">Guardar</button>
+      <button class="btn btn-a" onclick="saveTx()" id="sbtn">Guardar</button>
     </div>
   </div>
 </div>
@@ -287,388 +224,482 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px
 <script>
 const BIN_ID  = '6a1f7db2da38895dfe7e709c';
 const API_KEY = '$2a$10$KZ/5PuQY3f8ISTkZSbJ5gub./tyjiLmo/zJ64W04yRRGN0KaOyWtW';
-const URL_BIN = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const HEADERS_R = {'X-Access-Key': API_KEY};
-const HEADERS_W = {'Content-Type':'application/json','X-Access-Key': API_KEY};
-const SALDO_INICIAL = 815000;
+const BURL    = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const RH      = {'X-Access-Key': API_KEY};
+const WH      = {'Content-Type':'application/json','X-Access-Key': API_KEY};
+const SALDO0  = 815000;
 
-let tx = [], history = [], future = [];
-let newTipo = 'ingreso', newEstado = 'pendiente';
-let filters = {tipo:'', estado:''};
-let charts = {};
-let editId = null;
+let tx = [], hist = [], fut = [], filt = {tipo:'',estado:''}, charts = {}, editId = null, newEstado = 'pendiente';
 
-// ── UTILS ──
 const fmt  = n => '$' + Math.round(n).toLocaleString('es-CO');
-const fmtS = n => n>=1000000 ? '$'+(n/1000000).toFixed(1)+'M' : n>=1000 ? '$'+(n/1000).toFixed(0)+'K' : fmt(n);
-const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-const byDate = (a,b) => (b.fecha||'').localeCompare(a.fecha||'');
+const fmtS = n => n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':fmt(n);
+const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const byD  = (a,b) => (b.fecha||'').localeCompare(a.fecha||'');
+const $    = id => document.getElementById(id);
+const val  = id => ($( id)||{}).value || '';
 
 // ── SYNC ──
-function setSyncState(s, msg) {
-  const d = document.getElementById('sdot');
-  d.className = 'sync-dot' + (s==='ok'?' ok':s==='busy'?' busy':s==='err'?' err':'');
-  d.title = msg || '';
-  document.getElementById('sync-txt').textContent = msg || '';
-}
+function setS(s,m){const d=$('sdot');d.className='sdot'+(s==='ok'?' ok':s==='busy'?' busy':s==='err'?' err':'');$('stxt').textContent=m||''}
 
-async function loadData() {
-  setSyncState('busy','Cargando...');
-  try {
-    const r = await fetch(URL_BIN+'/latest', {headers: HEADERS_R});
-    if(!r.ok) throw new Error(r.status);
-    const j = await r.json();
-    const rec = j.record;
-    if(rec.transactions && rec.transactions.length) {
-      tx = rec.transactions;
-    } else {
-      tx = getSeed();
-      await saveData(true);
-    }
-    const t = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-    setSyncState('ok', '↻ '+t);
+async function load(){
+  setS('busy','Cargando...');
+  try{
+    const r=await fetch(BURL+'/latest',{headers:RH});
+    if(!r.ok)throw 0;
+    const j=await r.json();
+    if(j.record?.transactions?.length) tx=j.record.transactions;
+    else{tx=seed();await save(true)}
+    setS('ok','↻ '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
     return true;
-  } catch(e) {
-    setSyncState('err','Sin conexión');
-    if(!tx.length) tx = getSeed();
-    return false;
-  }
+  }catch{setS('err','Sin conexión');if(!tx.length)tx=seed();return false}
 }
 
-async function saveData(silent) {
-  if(!silent) setSyncState('busy','Guardando...');
-  try {
-    const r = await fetch(URL_BIN, {method:'PUT', headers: HEADERS_W, body: JSON.stringify({transactions: tx, version:2, saldo_inicial: SALDO_INICIAL})});
-    if(!r.ok) throw new Error(r.status);
-    const t = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-    setSyncState('ok','✓ '+t);
+async function save(silent){
+  if(!silent)setS('busy','Guardando...');
+  try{
+    const r=await fetch(BURL,{method:'PUT',headers:WH,body:JSON.stringify({transactions:tx,v:2,saldo0:SALDO0})});
+    if(!r.ok)throw 0;
+    setS('ok','✓ '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
     return true;
-  } catch(e) {
-    setSyncState('err','Error al guardar');
-    return false;
-  }
+  }catch{setS('err','Error');return false}
 }
 
-async function syncNow() {
-  await loadData();
-  renderAll();
-  showToast('✓ Sincronizado');
-}
+async function syncNow(){await load();renderAll();toast('✓ Sincronizado')}
 
 // ── HISTORY ──
-function snap() {
-  history.push(JSON.stringify(tx));
-  if(history.length > 20) history.shift();
-  future = [];
-  updateUndoBtn();
-}
-function undoAction() {
-  if(!history.length) return;
-  future.push(JSON.stringify(tx));
-  tx = JSON.parse(history.pop());
-  renderAll(); saveData();
-  showToast('↩ Deshecho'); updateUndoBtn();
-}
-function updateUndoBtn() {
-  const b = document.getElementById('undo-rb');
-  b.style.opacity = history.length ? '1' : '0.3';
-}
-document.addEventListener('keydown', e => {
-  if((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); undoAction(); }
-});
+function snap(){hist.push(JSON.stringify(tx));if(hist.length>20)hist.shift();fut=[];$('undo-rb').style.opacity='1'}
+function doUndo(){if(!hist.length)return;fut.push(JSON.stringify(tx));tx=JSON.parse(hist.pop());renderAll();save();toast('↩ Deshecho');$('undo-rb').style.opacity=hist.length?'1':'.3'}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();doUndo()}});
+
+// ── TIPO CONFIG ──
+const TIPOS = {
+  venta:    {label:'Venta / Servicio',    desc:'Cliente paga a 3DUNA',          color:'#4ade80', sign:'+'},
+  gasto:    {label:'Gasto directo',       desc:'3DUNA paga a proveedor',         color:'#f87171', sign:'−'},
+  adelanto: {label:'Adelanto de socio',   desc:'Nicolás o Samuel adelantan plata',color:'#fbbf24', sign:'−'},
+  prestamo: {label:'Préstamo interno',    desc:'3DUNA ↔ Samuel',                 color:'#60a5fa', sign:'±'},
+  comision: {label:'Comisión / Referido', desc:'La Nevera ↔ 3DUNA',             color:'#a78bfa', sign:'%'},
+};
+
+function tipoColor(t){return TIPOS[t]?.color||'#888'}
 
 // ── FEED ──
-function togglePill(el) {
-  const f = el.dataset.f, v = el.dataset.v;
-  document.querySelectorAll(`.pill[data-f="${f}"]`).forEach(p => p.classList.remove('on'));
-  el.classList.add('on');
-  filters[f] = v;
-  renderFeed();
+function setPill(el){
+  const f=el.dataset.f,v=el.dataset.v;
+  document.querySelectorAll(`.pill[data-f="${f}"]`).forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');filt[f]=v;renderFeed();
 }
 
-function getFiltered() {
-  const s = document.getElementById('srch').value.toLowerCase();
-  const ent = document.getElementById('f-ent').value;
-  return tx.filter(t => {
-    if(filters.tipo && t.tipo !== filters.tipo) return false;
-    if(filters.estado && t.estado !== filters.estado) return false;
-    if(ent && t.entidad !== ent) return false;
-    if(s && !(t.concepto||'').toLowerCase().includes(s) &&
-            !(t.categoria||'').toLowerCase().includes(s) &&
-            !(t.codigo||'').toLowerCase().includes(s)) return false;
+function getFiltered(){
+  const s=val('srch').toLowerCase();
+  return tx.filter(t=>{
+    if(filt.tipo&&t.tipo!==filt.tipo)return false;
+    if(filt.estado&&t.estado!==filt.estado)return false;
+    if(s&&!(t.concepto||'').toLowerCase().includes(s)&&!(t.categoria||'').toLowerCase().includes(s)&&!(t.quien||'').toLowerCase().includes(s)&&!(t.codigo||'').toLowerCase().includes(s))return false;
     return true;
   });
 }
 
-function groupByMonth(list) {
-  const g = {};
-  const noDate = [];
-  list.forEach(t => {
-    if(!t.fecha) { noDate.push(t); return; }
-    const m = t.fecha.slice(0,7);
-    if(!g[m]) g[m] = [];
-    g[m].push(t);
+function groupByMonth(list){
+  const g={},nd=[];
+  list.sort(byD).forEach(t=>{
+    if(!t.fecha){nd.push(t);return}
+    const m=t.fecha.slice(0,7);
+    (g[m]=g[m]||[]).push(t);
   });
-  const sorted = Object.keys(g).sort().reverse();
-  const result = sorted.map(m => ({label: fmtMonth(m), items: g[m]}));
-  if(noDate.length) result.push({label:'Sin fecha', items: noDate});
-  return result;
+  const res=Object.keys(g).sort().reverse().map(m=>({lbl:fmtMonth(m),items:g[m]}));
+  if(nd.length)res.push({lbl:'Sin fecha',items:nd});
+  return res;
 }
 
-function fmtMonth(m) {
-  const [y,mo] = m.split('-');
-  return ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][+mo-1] + ' ' + y;
+function fmtMonth(m){
+  const[y,mo]=m.split('-');
+  return ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][+mo-1]+' '+y;
 }
 
-const ENTIDAD_COLORS = {
-  'nicolas':   '#60a5fa',
-  'la nevera': '#a78bfa',
-  'samuel':    '#2dd4bf',
-  'cliente':   '#4ade80',
-  'proveedor': '#888',
-};
+function txSubline(t){
+  const parts=[];
+  if(t.fecha)parts.push(t.fecha);
+  if(t.quien)parts.push(t.quien);
+  if(t.medio)parts.push(t.medio==='TRANSF'?'Transf.':'Efectivo');
+  if(t.codigo)parts.push(t.codigo);
+  return parts.join(' · ');
+}
 
-function renderFeed() {
-  const filtered = getFiltered().sort(byDate);
-  const groups = groupByMonth(filtered);
-  const el = document.getElementById('feed-content');
-  if(!filtered.length) { el.innerHTML = '<div class="empty">Sin resultados</div>'; return; }
-  el.innerHTML = groups.map(g => `
+function renderFeed(){
+  const f=getFiltered(),groups=groupByMonth(f),el=$('feed');
+  if(!f.length){el.innerHTML='<div class="empty">Sin resultados</div>';return}
+  el.innerHTML=groups.map(g=>`
     <div class="tx-group">
-      <div class="tx-group-label">${g.label} · ${g.items.length}</div>
-      ${g.items.map(t => txRow(t)).join('')}
+      <div class="tx-group-lbl">${g.lbl} <span style="opacity:.4">${g.items.length}</span></div>
+      ${g.items.map(t=>txRow(t)).join('')}
     </div>`).join('');
 }
 
-function txRow(t) {
-  const color = t.tipo === 'ingreso' ? 'var(--green)' : 'var(--red)';
-  const sign  = t.tipo === 'ingreso' ? '+' : '−';
-  const eColor = ENTIDAD_COLORS[t.entidad] || '#888';
-  const idx = tx.indexOf(t);
-  return `<div class="tx-row" id="txr-${t.id}">
-    <div class="tx-indicator" style="background:${color};opacity:${t.estado==='pagado'?'1':'0.4'}"></div>
-    <div class="tx-main">
-      <div class="tx-concepto">${t.concepto || '<span style="color:var(--t3)">'+t.categoria+'</span>'}</div>
-      <div class="tx-meta">${t.fecha||'Sin fecha'} · ${t.medio==='TRANSF'?'Transferencia':'Efectivo'}${t.codigo?' · '+t.codigo:''}</div>
+function txRow(t){
+  const c=tipoColor(t.tipo);
+  const idx=tx.indexOf(t);
+  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d');
+  const valColor=isPos?'var(--green)':'var(--red)';
+  const sign=isPos?'+':'−';
+  const tipInfo=TIPOS[t.tipo]||{label:t.tipo};
+  return `<div class="tx-row">
+    <div class="tx-bar" style="background:${c};opacity:${t.estado==='pagado'?'1':'.35'}"></div>
+    <div class="tx-body">
+      <div class="tx-con">${t.concepto||'<span style="color:var(--t3)">(sin concepto)</span>'}</div>
+      <div class="tx-sub">
+        <span class="tx-tag" style="background:${c}18;color:${c};border:1px solid ${c}25">${tipInfo.label}</span>
+        <span>${txSubline(t)}</span>
+      </div>
     </div>
-    <div class="tx-entidad" style="color:${eColor};background:${eColor}18;border-color:${eColor}25">${t.entidad}</div>
-    <div class="tx-cat">${t.categoria}</div>
-    <div class="tx-valor" style="color:${color}">${sign}${fmt(t.valor)}</div>
-    <div class="tx-estado">
-      <button class="estado-btn ${t.estado}" onclick="toggleEstado('${t.id}')">${t.estado}</button>
-      <button class="del-btn" onclick="deleteTx('${t.id}')" title="Eliminar">×</button>
+    <div class="tx-cat">${t.categoria||''}</div>
+    <div class="tx-val" style="color:${valColor}">${sign}${fmt(t.valor)}</div>
+    <div class="tx-actions">
+      <button class="s-btn ${t.estado==='pendiente'?'s-p':'s-pg'}" onclick="toggleE('${t.id}')">${t.estado==='pendiente'?'pendiente':'pagado'}</button>
+      <button class="del" onclick="delTx('${t.id}')">×</button>
     </div>
   </div>`;
 }
 
 // ── BALANCES ──
-function renderBalances() {
-  const entidades = ['la nevera','nicolas','samuel','cliente','proveedor'];
-  const cards = entidades.map(ent => {
-    const entra  = tx.filter(t=>t.entidad===ent&&t.tipo==='ingreso'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-    const sale   = tx.filter(t=>t.entidad===ent&&t.tipo==='egreso' &&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-    const pCobrar= tx.filter(t=>t.entidad===ent&&t.tipo==='ingreso'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-    const pPagar = tx.filter(t=>t.entidad===ent&&t.tipo==='egreso' &&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-    const neto   = entra - sale;
-    const color  = ENTIDAD_COLORS[ent] || '#888';
-    const netColor = neto > 0 ? 'var(--green)' : neto < 0 ? 'var(--red)' : 'var(--t2)';
+function renderBalances(){
+  const el=$('bal-grid');
 
-    const rows = [
-      entra  ? `<div class="bal-row"><span class="bal-row-label">Pagado a 3DUNA</span><span class="bal-row-val" style="color:var(--green)">${fmt(entra)}</span></div>` : '',
-      sale   ? `<div class="bal-row"><span class="bal-row-label">3DUNA pagó</span><span class="bal-row-val" style="color:var(--red)">${fmt(sale)}</span></div>` : '',
-      pCobrar? `<div class="bal-row"><span class="bal-row-label">Por cobrar</span><span class="bal-row-val" style="color:var(--amber)">${fmt(pCobrar)}</span></div>` : '',
-      pPagar ? `<div class="bal-row"><span class="bal-row-label">Por pagar</span><span class="bal-row-val" style="color:var(--amber)">${fmt(pPagar)}</span></div>` : '',
-    ].filter(Boolean).join('');
+  // 1. Nicolas — 3DUNA le debe (adelantos pendientes)
+  const nicPend=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.estado==='pendiente');
+  const nicPaid=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.estado==='pagado');
+  const nicDebt=nicPend.reduce((s,t)=>s+t.valor,0);
+  const nicPaidA=nicPaid.reduce((s,t)=>s+t.valor,0);
 
-    return `<div class="bal-card" style="border-color:${color}22">
-      <div class="bal-header">
-        <div class="bal-name" style="color:${color}">${ent}</div>
-        <div class="bal-badge" style="background:${color}18;color:${color}">${tx.filter(t=>t.entidad===ent).length} movs</div>
-      </div>
-      <div class="bal-number" style="color:${netColor}">${fmtS(Math.abs(neto))}</div>
-      <div class="bal-sub" style="color:var(--t3)">${neto>0?'3DUNA recibió más':neto<0?'3DUNA pagó más':'En equilibrio'}</div>
-      ${rows}
-    </div>`;
-  });
-  document.getElementById('bal-grid').innerHTML = cards.join('');
+  // 2. La Nevera — por cobrar (ventas via LN pendientes)
+  const lnCobrar=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
+  const lnCobrado=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pagado');
+  const lnDebt=lnCobrar.reduce((s,t)=>s+t.valor,0);
+  const lnPaidA=lnCobrado.reduce((s,t)=>s+t.valor,0);
+
+  // 3. Samuel — préstamos pendientes
+  const samPend=tx.filter(t=>t.tipo==='prestamo'&&t.estado==='pendiente');
+  const sam3d=samPend.filter(t=>t.dir==='3d-sam').reduce((s,t)=>s+t.valor,0);
+  const sam3dR=samPend.filter(t=>t.dir==='sam-3d').reduce((s,t)=>s+t.valor,0);
+
+  // 4. Comisiones
+  const comLN=tx.filter(t=>t.tipo==='comision'&&t.dir==='ln-3d'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const com3D=tx.filter(t=>t.tipo==='comision'&&t.dir==='3d-ln'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+
+  // 5. Saldo cuenta
+  const inP=tx.filter(t=>['venta'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const saldo=SALDO0+inP-outP;
+
+  el.innerHTML=`
+    ${balCard('Nicolás','#fbbf24',nicDebt,
+      nicDebt>0?'3DUNA le debe reembolsar':'Al día',
+      [['Reembolsado',fmt(nicPaidA),'var(--green)'],['Por reembolsar',fmt(nicDebt),'var(--amber)'],['Adelantos',`${nicPend.length+nicPaid.length} items`,'var(--t3)']],
+      nicPend.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--amber)">${fmt(t.valor)}</span></div>`).join('')+
+      (nicPend.length>4?`<div class="bal-more">+${nicPend.length-4} más pendientes</div>`:'' )
+    )}
+    ${balCard('La Nevera','#a78bfa',lnDebt,
+      lnDebt>0?'Por cobrar a La Nevera':'Todo cobrado',
+      [['Cobrado',fmt(lnPaidA),'var(--green)'],['Por cobrar',fmt(lnDebt),'var(--purple)'],['Ventas',`${lnCobrar.length+lnCobrado.length} items`,'var(--t3)']],
+      lnCobrar.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(t.valor)}</span></div>`).join('')+
+      (lnCobrar.length>4?`<div class="bal-more">+${lnCobrar.length-4} más pendientes</div>`:'')
+    )}
+    ${balCard('Samuel','#2dd4bf',Math.abs(sam3d-sam3dR),
+      sam3d>sam3dR?'3DUNA le debe a Samuel':sam3dR>sam3d?'Samuel le debe a 3DUNA':'En equilibrio',
+      [['3DUNA→Samuel pend.',fmt(sam3d),'var(--red)'],['Samuel→3DUNA pend.',fmt(sam3dR),'var(--green)']],''
+    )}
+    ${balCard('Comisiones','#60a5fa',comLN+com3D,
+      'Comisiones pendientes',
+      [['LN → 3DUNA',fmt(comLN),'var(--green)'],['3DUNA → LN',fmt(com3D),'var(--red)']],''
+    )}
+    ${balCard('Saldo cuenta','#4ade80',saldo,
+      'Pagos realizados net',
+      [['Saldo inicial',fmt(SALDO0),'var(--t3)'],['Ingresos cobrados',fmt(inP),'var(--green)'],['Egresos pagados',fmt(outP),'var(--red)']],''
+    )}
+  `;
+}
+
+function balCard(name,color,num,desc,rows,detail){
+  const numColor=num>0?color:'var(--t2)';
+  return `<div class="bal-card" style="border-top-color:${color}">
+    <div class="bal-head"><div class="bal-name" style="color:${color}">${name}</div></div>
+    <div class="bal-num" style="color:${numColor}">${fmtS(num)}</div>
+    <div class="bal-desc">${desc}</div>
+    ${rows.map(([l,v,c])=>`<div class="bal-row"><span class="bal-rl">${l}</span><span class="bal-rv" style="color:${c}">${v}</span></div>`).join('')}
+    ${detail?`<div class="bal-items">${detail}</div>`:''}
+  </div>`;
 }
 
 // ── RESUMEN ──
-function renderResumen() {
-  const inP  = tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-  const outP = tx.filter(t=>t.tipo==='egreso' &&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-  const saldo = SALDO_INICIAL + inP - outP;
-  const cobrar= tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-  const pagar = tx.filter(t=>t.tipo==='egreso' &&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+function renderResumen(){
+  const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const saldo=SALDO0+inP-outP;
+  const cobrar=tx.filter(t=>t.tipo==='venta'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const pagar=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
 
-  document.getElementById('sum-metrics').innerHTML = `
-    <div class="smet"><div class="smet-label">Saldo cuenta</div><div class="smet-val" style="color:var(--blue)">${fmtS(saldo)}</div><div class="smet-sub">desde ${fmt(SALDO_INICIAL)}</div></div>
-    <div class="smet"><div class="smet-label">Total ingresos</div><div class="smet-val" style="color:var(--green)">${fmtS(inP)}</div><div class="smet-sub">${tx.filter(t=>t.tipo==='ingreso').length} movs</div></div>
-    <div class="smet"><div class="smet-label">Total egresos</div><div class="smet-val" style="color:var(--red)">${fmtS(outP)}</div><div class="smet-sub">${tx.filter(t=>t.tipo==='egreso').length} movs</div></div>
-    <div class="smet"><div class="smet-label">Por cobrar</div><div class="smet-val" style="color:var(--amber)">${fmtS(cobrar)}</div><div class="smet-sub">pendiente ${fmt(cobrar-pagar)}</div></div>
+  $('met-grid').innerHTML=`
+    <div class="met"><div class="met-l">Saldo cuenta</div><div class="met-v" style="color:var(--blue)">${fmtS(saldo)}</div><div class="met-s">inicio ${fmtS(SALDO0)}</div></div>
+    <div class="met"><div class="met-l">Ventas cobradas</div><div class="met-v" style="color:var(--green)">${fmtS(inP)}</div><div class="met-s">${tx.filter(t=>t.tipo==='venta').length} movs</div></div>
+    <div class="met"><div class="met-l">Gastos pagados</div><div class="met-v" style="color:var(--red)">${fmtS(outP)}</div><div class="met-s">${tx.filter(t=>['gasto','adelanto'].includes(t.tipo)).length} movs</div></div>
+    <div class="met"><div class="met-l">Por cobrar</div><div class="met-v" style="color:var(--amber)">${fmtS(cobrar)}</div><div class="met-s">por pagar ${fmtS(pagar)}</div></div>
   `;
 
-  // Monthly chart
-  const months = {};
-  tx.forEach(t => {
-    const m = t.fecha ? t.fecha.slice(0,7) : null; if(!m) return;
-    if(!months[m]) months[m] = {in:0,out:0};
-    months[m][t.tipo==='ingreso'?'in':'out'] += t.valor;
+  // monthly
+  const months={};
+  tx.forEach(t=>{
+    const m=t.fecha?t.fecha.slice(0,7):null;if(!m)return;
+    if(!months[m])months[m]={in:0,out:0};
+    if(t.tipo==='venta')months[m].in+=t.valor;
+    if(['gasto','adelanto'].includes(t.tipo))months[m].out+=t.valor;
   });
-  const mk = Object.keys(months).sort();
-  const mlbls = mk.map(m => { const [y,mo]=m.split('-'); return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo-1]+"'"+y.slice(2); });
-  if(charts.mes) charts.mes.destroy();
-  charts.mes = new Chart(document.getElementById('ch-mes'), {type:'bar', data:{labels:mlbls, datasets:[
-    {label:'Ingresos',data:mk.map(m=>months[m].in),backgroundColor:'rgba(74,222,128,.25)',borderColor:'#4ade80',borderWidth:1,borderRadius:3},
-    {label:'Egresos', data:mk.map(m=>months[m].out),backgroundColor:'rgba(248,113,113,.25)',borderColor:'#f87171',borderWidth:1,borderRadius:3}
-  ]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+  const mk=Object.keys(months).sort();
+  const ml=mk.map(m=>{const[y,mo]=m.split('-');return['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo-1]+"'"+y.slice(2)});
+  if(charts.mes)charts.mes.destroy();
+  charts.mes=new Chart($('ch-mes'),{type:'bar',data:{labels:ml,datasets:[
+    {label:'Ventas',data:mk.map(m=>months[m].in),backgroundColor:'rgba(74,222,128,.25)',borderColor:'#4ade80',borderWidth:1,borderRadius:2},
+    {label:'Gastos',data:mk.map(m=>months[m].out),backgroundColor:'rgba(248,113,113,.25)',borderColor:'#f87171',borderWidth:1,borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
     scales:{x:{ticks:{color:'#555',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#555',font:{size:10},callback:v=>fmtS(v)},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}}}}});
 
-  // Category donut
-  const cats = {};
-  tx.forEach(t => { cats[t.categoria] = (cats[t.categoria]||0) + t.valor; });
-  const ck = Object.keys(cats).sort((a,b)=>cats[b]-cats[a]).slice(0,6);
-  const clrs = ['#4ade8044','#60a5fa44','#fbbf2444','#a78bfa44','#2dd4bf44','#f8717144'];
-  const bclrs= ['#4ade80','#60a5fa','#fbbf24','#a78bfa','#2dd4bf','#f87171'];
-  if(charts.cat) charts.cat.destroy();
-  charts.cat = new Chart(document.getElementById('ch-cat'), {type:'doughnut', data:{labels:ck, datasets:[{data:ck.map(c=>cats[c]),backgroundColor:clrs,borderColor:bclrs,borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#666',font:{size:10},boxWidth:8,padding:6}}}}});
+  // by tipo
+  const tipos={};
+  tx.forEach(t=>{tipos[t.tipo]=(tipos[t.tipo]||0)+t.valor});
+  const tk=Object.keys(tipos).sort((a,b)=>tipos[b]-tipos[a]);
+  const tColors=tk.map(t=>tipoColor(t)+'55');
+  const tBColors=tk.map(t=>tipoColor(t));
+  const tLabels=tk.map(t=>TIPOS[t]?.label||t);
+  if(charts.tipo)charts.tipo.destroy();
+  charts.tipo=new Chart($('ch-tipo'),{type:'doughnut',data:{labels:tLabels,datasets:[{data:tk.map(t=>tipos[t]),backgroundColor:tColors,borderColor:tBColors,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:'#666',font:{size:10},boxWidth:8,padding:6}}}}});
 
-  // Balance line
-  const sorted = [...tx].filter(t=>t.fecha&&t.estado==='pagado').sort((a,b)=>a.fecha.localeCompare(b.fecha));
-  let bal = SALDO_INICIAL;
-  const pts = [{x:'Inicio',y:bal}];
-  sorted.forEach(t => { bal += t.tipo==='ingreso'?t.valor:-t.valor; pts.push({x:t.fecha,y:bal}); });
-  if(charts.bal) charts.bal.destroy();
-  charts.bal = new Chart(document.getElementById('ch-bal'), {type:'line', data:{labels:pts.map(p=>p.x), datasets:[{data:pts.map(p=>p.y),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.06)',borderWidth:1.5,pointRadius:1,tension:.3,fill:true}]},
+  // balance line
+  const sorted=[...tx].filter(t=>t.fecha&&t.estado==='pagado').sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  let bal=SALDO0;const pts=[{x:'Inicio',y:bal}];
+  sorted.forEach(t=>{
+    if(t.tipo==='venta')bal+=t.valor;
+    if(['gasto','adelanto'].includes(t.tipo))bal-=t.valor;
+    pts.push({x:t.fecha,y:bal});
+  });
+  if(charts.bal)charts.bal.destroy();
+  charts.bal=new Chart($('ch-bal'),{type:'line',data:{labels:pts.map(p=>p.x),datasets:[{data:pts.map(p=>p.y),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.06)',borderWidth:1.5,pointRadius:1,tension:.3,fill:true}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{color:'#555',font:{size:9},maxTicksLimit:8},grid:{display:false}},y:{ticks:{color:'#555',font:{size:9},callback:v=>fmtS(v)},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}}}}});
 }
 
-// ── ACTIONS ──
-async function toggleEstado(id) {
-  snap();
-  const t = tx.find(t=>t.id===id); if(!t) return;
-  t.estado = t.estado==='pendiente'?'pagado':'pendiente';
-  renderAll(); await saveData();
-  showToast(t.estado==='pagado'?'✓ Marcado como pagado':'↩ Revertido a pendiente');
-}
-
-async function deleteTx(id) {
-  snap();
-  tx = tx.filter(t=>t.id!==id);
-  renderAll(); await saveData();
-  showToast('Movimiento eliminado');
-}
-
 // ── MODAL ──
-function setTipo(t) {
-  newTipo = t;
-  document.getElementById('ti').className = 'ttog-btn'+(t==='ingreso'?' on-i':'');
-  document.getElementById('te').className = 'ttog-btn'+(t==='egreso'?' on-e':'');
+let curTipo = 'venta';
+
+const TYPE_FORMS = {
+  venta: () => `
+    <div class="fhint">💰 El cliente paga a 3DUNA — directo o a través de La Nevera</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">¿Quién paga?</label>
+        <select class="fs" id="f-quien"><option value="cliente">Cliente directo</option><option value="la nevera">La Nevera</option><option value="nicolas">Vía Nicolás</option></select></div>
+      <div class="fg"><label class="fl">Categoría</label>
+        <select class="fs" id="f-cat">${catOptions()}</select></div>
+    </div>
+    <div class="fg"><label class="fl">Concepto</label><input class="fi" type="text" id="f-con" placeholder="Descripción del trabajo o producto"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">IVA (COP)</label><input class="fi" type="number" id="f-iva" placeholder="0"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
+    </div>
+    <div class="fg"><label class="fl">¿Ya cobrado?</label>${estadoToggle()}</div>
+    <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="COT-XXXXX"></div>
+  `,
+  gasto: () => `
+    <div class="fhint">🧾 3DUNA paga directamente al proveedor</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Categoría</label><select class="fs" id="f-cat">${catOptions()}</select></div>
+      <div class="fg"><label class="fl">Proveedor</label><input class="fi" type="text" id="f-quien" placeholder="Nombre proveedor"></div>
+    </div>
+    <div class="fg"><label class="fl">Concepto</label><input class="fi" type="text" id="f-con" placeholder="¿Qué se compró?"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
+      <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
+    </div>
+    <div class="fg"><label class="fl">¿Ya pagado?</label>${estadoToggle()}</div>
+  `,
+  adelanto: () => `
+    <div class="fhint">🤝 El socio paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">¿Quién adelantó?</label>
+        <select class="fs" id="f-quien"><option value="nicolas">Nicolás</option><option value="samuel">Samuel</option></select></div>
+      <div class="fg"><label class="fl">Categoría</label><select class="fs" id="f-cat">${catOptions()}</select></div>
+    </div>
+    <div class="fg"><label class="fl">¿Qué compró / pagó?</label><input class="fi" type="text" id="f-con" placeholder="Descripción del gasto"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="fg"><label class="fl">¿Ya le reembolsaron?</label>${estadoToggle('pendiente','¿Debe','Reembolsado')}</div>
+    <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
+  `,
+  prestamo: () => `
+    <div class="fhint">🔄 Movimiento de dinero entre 3DUNA y Samuel</div>
+    <div class="fg"><label class="fl">Dirección del préstamo</label>
+      <select class="fs" id="f-dir">
+        <option value="3d-sam">3DUNA le da plata a Samuel</option>
+        <option value="sam-3d">Samuel le devuelve / da plata a 3DUNA</option>
+      </select></div>
+    <div class="fg"><label class="fl">Concepto</label><input class="fi" type="text" id="f-con" placeholder="Préstamo, retiro, devolución..."></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="EFECTI">Efectivo</option><option value="TRANSF">Transferencia</option></select></div>
+    <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Completado')}</div>
+  `,
+  comision: () => `
+    <div class="fhint">📊 Comisión entre La Nevera y 3DUNA por referidos</div>
+    <div class="fg"><label class="fl">Dirección</label>
+      <select class="fs" id="f-dir">
+        <option value="ln-3d">La Nevera refirió cliente → Le deben comisión a La Nevera</option>
+        <option value="3d-ln">3DUNA refirió cliente → Le deben comisión a 3DUNA</option>
+      </select></div>
+    <div class="fg"><label class="fl">Concepto / Proyecto base</label><input class="fi" type="text" id="f-con" placeholder="¿A qué venta aplica?"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Valor comisión (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
+      <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
+    </div>
+    <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Pagado')}</div>
+  `,
+};
+
+function catOptions(){
+  return ['cotizacion','reabastecimiento','inversion drones','inversion','mantenimiento','nomina empleados','prestamo','cliente referido LN','referido 3DUNA']
+    .map(c=>`<option>${c}</option>`).join('');
 }
-function setEstado(e) {
-  newEstado = e;
-  document.getElementById('ep').className  = 'etog-btn'+(e==='pendiente'?' on-p':'');
-  document.getElementById('epg').className = 'etog-btn'+(e==='pagado'?' on-pg':'');
+
+function estadoToggle(def='pendiente',lp='Pendiente',lpg='Pagado'){
+  newEstado=def;
+  return `<div class="etog">
+    <button class="etog-btn ${def==='pendiente'?'on-p':''}" id="ep" onclick="setE('pendiente')">${lp||'Pendiente'}</button>
+    <button class="etog-btn ${def==='pagado'?'on-pg':''}" id="epg" onclick="setE('pagado')">${lpg||'Pagado'}</button>
+  </div>`;
 }
-function openModal(id) {
-  editId = id || null;
-  document.getElementById('modal-title').textContent = id ? 'Editar movimiento' : 'Nuevo movimiento';
-  if(id) {
-    const t = tx.find(t=>t.id===id);
-    setTipo(t.tipo); setEstado(t.estado);
-    document.getElementById('n-cat').value = t.categoria;
-    document.getElementById('n-ent').value = t.entidad;
-    document.getElementById('n-con').value = t.concepto||'';
-    document.getElementById('n-val').value = t.valor;
-    document.getElementById('n-iva').value = t.iva||0;
-    document.getElementById('n-fec').value = t.fecha||'';
-    document.getElementById('n-med').value = t.medio||'TRANSF';
-    document.getElementById('n-cod').value = t.codigo||'';
-  } else {
-    setTipo('ingreso'); setEstado('pendiente');
-    ['n-con','n-val','n-iva','n-cod'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('n-fec').valueAsDate = new Date();
+
+function setE(e){
+  newEstado=e;
+  $('ep').className='etog-btn'+(e==='pendiente'?' on-p':'');
+  $('epg').className='etog-btn'+(e==='pagado'?' on-pg':'');
+}
+
+function typeGrid(){
+  return `<div class="type-grid">
+    ${Object.entries(TIPOS).map(([k,v])=>`
+      <div class="type-card ${k===curTipo?'on':''}" onclick="setTipo('${k}')" id="tc-${k}" style="${k===curTipo?`border-color:${v.color};background:${v.color}12`:''}">
+        <div class="type-ico" style="background:${v.color}18">${{venta:'💰',gasto:'🧾',adelanto:'🤝',prestamo:'🔄',comision:'📊'}[k]}</div>
+        <div class="type-info"><div class="type-name">${v.label}</div><div class="type-desc">${v.desc}</div></div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function setTipo(t){
+  curTipo=t;
+  renderModalBody();
+}
+
+function renderModalBody(){
+  $('modal-body').innerHTML=typeGrid()+'<div class="fdivider"></div>'+(TYPE_FORMS[curTipo]?TYPE_FORMS[curTipo]():'');
+  const fec=$('f-fec');if(fec)fec.valueAsDate=new Date();
+}
+
+function openModal(id){
+  editId=id||null;
+  $('modal-title').textContent=id?'Editar movimiento':'Nuevo movimiento';
+  curTipo=id?(tx.find(t=>t.id===id)||{}).tipo||'venta':'venta';
+  renderModalBody();
+  if(id){
+    const t=tx.find(t=>t.id===id);
+    if(!t)return;
+    if($('f-quien'))$('f-quien').value=t.quien||'';
+    if($('f-cat'))$('f-cat').value=t.categoria||'cotizacion';
+    if($('f-con'))$('f-con').value=t.concepto||'';
+    if($('f-val'))$('f-val').value=t.valor||'';
+    if($('f-iva'))$('f-iva').value=t.iva||'';
+    if($('f-fec'))$('f-fec').value=t.fecha||'';
+    if($('f-med'))$('f-med').value=t.medio||'TRANSF';
+    if($('f-cod'))$('f-cod').value=t.codigo||'';
+    if($('f-dir'))$('f-dir').value=t.dir||'';
+    setE(t.estado||'pendiente');
   }
-  document.getElementById('modal').classList.add('open');
+  $('modal').classList.add('open');
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); editId=null; }
+function closeModal(){$('modal').classList.remove('open');editId=null}
 
-async function saveTx() {
-  const val = parseFloat(document.getElementById('n-val').value)||0;
-  const con = document.getElementById('n-con').value.trim();
-  if(!val) { showToast('Ingresa un valor'); return; }
-
+async function saveTx(){
+  const v=parseFloat(val('f-val'))||0;
+  if(!v){toast('Ingresa un valor');return}
   snap();
-  const btn = document.getElementById('save-btn');
-  btn.disabled=true; btn.textContent='Guardando...';
-
-  const entry = {
-    id: editId || uid(),
-    tipo: newTipo,
-    estado: newEstado,
-    categoria: document.getElementById('n-cat').value,
-    entidad: document.getElementById('n-ent').value,
-    concepto: con,
-    valor: val,
-    iva: parseFloat(document.getElementById('n-iva').value)||0,
-    fecha: document.getElementById('n-fec').value,
-    medio: document.getElementById('n-med').value,
-    codigo: document.getElementById('n-cod').value||'',
-    created_at: editId ? (tx.find(t=>t.id===editId)||{}).created_at : new Date().toISOString()
+  const btn=$('sbtn');btn.disabled=true;btn.textContent='Guardando...';
+  const entry={
+    id:editId||uid(),tipo:curTipo,estado:newEstado,
+    valor:v,iva:parseFloat(val('f-iva'))||0,
+    quien:val('f-quien'),categoria:val('f-cat'),
+    concepto:val('f-con'),fecha:val('f-fec'),
+    medio:val('f-med'),codigo:val('f-cod'),
+    dir:val('f-dir'),
+    created_at:editId?(tx.find(t=>t.id===editId)||{}).created_at:new Date().toISOString()
   };
-
-  if(editId) { const i=tx.findIndex(t=>t.id===editId); if(i>-1) tx[i]=entry; }
+  if(editId){const i=tx.findIndex(t=>t.id===editId);if(i>-1)tx[i]=entry}
   else tx.unshift(entry);
+  closeModal();renderAll();
+  const ok=await save();
+  toast(ok?'✓ Guardado':'⚠ Sin conexión — guardado local');
+  btn.disabled=false;btn.textContent='Guardar';
+}
 
-  closeModal();
-  renderAll();
-  const ok = await saveData();
-  showToast(ok ? '✓ Guardado' : '⚠ Sin conexión — guardado local');
-  btn.disabled=false; btn.textContent='Guardar';
+// ── ACTIONS ──
+async function toggleE(id){
+  snap();const t=tx.find(t=>t.id===id);if(!t)return;
+  t.estado=t.estado==='pendiente'?'pagado':'pendiente';
+  renderAll();await save();
+  toast(t.estado==='pagado'?'✓ Pagado':'↩ Revertido');
+}
+
+async function delTx(id){
+  snap();tx=tx.filter(t=>t.id!==id);
+  renderAll();await save();toast('Eliminado');
 }
 
 // ── PAGES ──
-function gotoPage(p, el) {
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.rail-btn[id^="rb-"]').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  document.getElementById('rb-'+p).classList.add('active');
-  const titles = {feed:'Feed',balances:'Balances',resumen:'Resumen'};
-  document.getElementById('page-title').textContent = titles[p];
-  if(p==='balances') renderBalances();
-  if(p==='resumen') renderResumen();
+function goto(p,el){
+  document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.rb[id^="rb-"]').forEach(x=>x.classList.remove('on'));
+  $('pg-'+p).classList.add('on');$('rb-'+p).classList.add('on');
+  $('ptitle').textContent={feed:'Feed',balances:'Balances',resumen:'Resumen'}[p];
+  if(p==='balances')renderBalances();
+  if(p==='resumen')renderResumen();
 }
 
-function renderAll() {
+function renderAll(){
   renderFeed();
-  const active = document.querySelector('.page.active');
-  if(active && active.id==='page-balances') renderBalances();
-  if(active && active.id==='page-resumen') renderResumen();
+  const a=document.querySelector('.pg.on');
+  if(a?.id==='pg-balances')renderBalances();
+  if(a?.id==='pg-resumen')renderResumen();
 }
 
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show';
-  setTimeout(()=>t.className='toast',2800);
-}
+function toast(m){const t=$('toast');t.textContent=m;t.className='toast show';setTimeout(()=>t.className='toast',2600)}
 
 // ── SEED ──
-function getSeed() {
-  return [{"id":"a1b2c3d4e5f6","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":160000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-01-20","medio":"TRANSF","concepto":"PLA NEGRO POLYMASTER","codigo":""},{"id":"b2c3d4e5f6a1","tipo":"egreso","estado":"pagado","categoria":"mantenimiento","valor":73450,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"I+D switches y 3ra mano","codigo":"didacticas eletc"},{"id":"c3d4e5f6a1b2","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":30000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-01","medio":"TRANSF","concepto":"repuesto moto","codigo":""},{"id":"d4e5f6a1b2c3","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":80000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-01","medio":"TRANSF","concepto":"piezas dragon","codigo":""},{"id":"e5f6a1b2c3d4","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":158000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-02","medio":"TRANSF","concepto":"filamento PETG blanco","codigo":"POLYMASTERS"},{"id":"f6a1b2c3d4e5","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":1798000,"iva":341620,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-05","medio":"TRANSF","concepto":"OZ studio 012605 50%","codigo":"COT-012605"},{"id":"a1b2c3d4e5f7","tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":60000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-02-05","medio":"TRANSF","concepto":"repuesto fibra oasis","codigo":""},{"id":"b2c3d4e5f6a2","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision","codigo":""},{"id":"c3d4e5f6a1b3","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision #2","codigo":""},{"id":"d4e5f6a1b2c4","tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":332700,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Taima","codigo":""},{"id":"e5f6a1b2c3d5","tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":330000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Camilax","codigo":""},{"id":"f6a1b2c3d4e6","tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":150000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-02-11","medio":"TRANSF","concepto":"frame nav25","codigo":"JUAN PABLO ZULUAGA"},{"id":"a1b2c3d4e5f8","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":1165866,"iva":0,"entidad":"la nevera","direccion":"sale","fecha":"2026-02-11","medio":"TRANSF","concepto":"madera TECA","codigo":"FACTURA 123456"},{"id":"b2c3d4e5f6a3","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":89300,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-12","medio":"TRANSF","concepto":"LIJA THINNER","codigo":"PINTURAS SANTA FE"},{"id":"c3d4e5f6a1b4","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-15","medio":"TRANSF","concepto":"zapatos oasis","codigo":""},{"id":"d4e5f6a1b2c5","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":64000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-18","medio":"TRANSF","concepto":"ACEITE DE COCO","codigo":"Cot 012605-1"},{"id":"e5f6a1b2c3d6","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":50000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-20","medio":"TRANSF","concepto":"case fpv","codigo":""},{"id":"f6a1b2c3d4e7","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-25","medio":"TRANSF","concepto":"camera hold","codigo":""},{"id":"a1b2c3d4e5f9","tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":50000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-25","medio":"TRANSF","concepto":"Impresion parlantes","codigo":""},{"id":"b2c3d4e5f6a4","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":23800,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-02-26","medio":"TRANSF","concepto":"imanes","codigo":""},{"id":"c3d4e5f6a1b5","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":37800,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-27","medio":"TRANSF","concepto":"masilla","codigo":"Cot 012605-1"},{"id":"d4e5f6a1b2c6","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":52500,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-03-03","medio":"TRANSF","concepto":"bases de pino recompra","codigo":"Cot 022604-2"},{"id":"e5f6a1b2c3d7","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":1721474,"iva":327080,"entidad":"la nevera","direccion":"entra","fecha":"2026-03-04","medio":"TRANSF","concepto":"Tablas pizza teca 50% restante","codigo":"Cot 012605-1"},{"id":"f6a1b2c3d4e8","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":55502,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-03-05","medio":"TRANSF","concepto":"tablones pino madecentro","codigo":"Cot 022602"},{"id":"a1b2c3d4e5g1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":58137,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3mm","codigo":"DRONES"},{"id":"b2c3d4e5f6b1","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":82911,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"fresas fibra 3 set x10","codigo":"DRONES"},{"id":"c3d4e5f6a2b1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":20280,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 125x75 3mm","codigo":"DRONES"},{"id":"d4e5f6a1c2b1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":129406,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x400 3mm","codigo":"DRONES"},{"id":"e5f6a1b3c2d1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":142574,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Tornilleria","codigo":"DRONES"},{"id":"f6a1b2d3c4e1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":179434,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 3mm","codigo":"DRONES"},{"id":"a1b3c2d4e5f1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":124300,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3.5mm","codigo":"DRONES"},{"id":"b2c4d3e5f6a5","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":147540,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 2.5mm","codigo":"DRONES"},{"id":"c3d5e4f6a1b6","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":59622,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Fresas 2mm x10","codigo":"DRONES"},{"id":"d4e6f5a1b2c7","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":128302,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placas 200x300 3mm x2","codigo":"DRONES"},{"id":"e5f1a6b2c3d8","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":90000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"cajas x10","codigo":"DRONES"},{"id":"f6a2b1c3d4e9","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":10000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"straps x10","codigo":"DRONES"},{"id":"a1b2c3d5e6f1","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":93000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"llave filtro","codigo":"JULIANA ARANGO"},{"id":"b2c3d4f5a6e1","tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":25000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"canopy","codigo":""},{"id":"c3d4e5a6f1b7","tipo":"ingreso","estado":"pendiente","categoria":"referido 3DUNA","valor":42500,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"Comision 10% Corte Laser Selva","codigo":""},{"id":"d4e5f6b1a2c8","tipo":"ingreso","estado":"pagado","categoria":"cliente referido LN","valor":340000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"EFECTI","concepto":"WILLIAM gymcats","codigo":""},{"id":"e5f6a1c2b3d9","tipo":"egreso","estado":"pendiente","categoria":"prestamo","valor":90000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"","medio":"EFECTI","concepto":"PRESTAMO SAM","codigo":""},{"id":"f6a1b2e3c4d1","tipo":"ingreso","estado":"pendiente","categoria":"prestamo","valor":50000,"iva":0,"entidad":"samuel","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"PAGO SAM","codigo":""},{"id":"a1b2c4d3e5f2","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":52500,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022604-2","codigo":"022604-2"},{"id":"b2c3e4d5f6a6","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":113000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022602","codigo":"022602-1"},{"id":"c3d4f5e6a1b8","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":147000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"","medio":"TRANSF","concepto":"Polipropileno zuluprints","codigo":""},{"id":"d4e5a6f1b2c9","tipo":"egreso","estado":"pagado","categoria":"reabastecimiento","valor":30000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"2026-03-06","medio":"TRANSF","concepto":"BOLILLOS MADERA DOLLARCITY","codigo":"BOLILLOS MADERA"},{"id":"e5f6b1a2c3d2","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":74700,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"id":"f6a1c2b3d4e2","tipo":"egreso","estado":"pagado","categoria":"inversion","valor":407000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-01-13","medio":"TRANSF","concepto":"MADERA ORITO ROBLE","codigo":""},{"id":"a1b3d2c4e5f3","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":84000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"id":"b2c4e3d5f6a7","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":1000000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-03-11","medio":"TRANSF","concepto":"PAGO 1M lanevera","codigo":""},{"id":"c3d5f4e6a1b9","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":450000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-10","medio":"TRANSF","concepto":"3 frames nav25","codigo":""},{"id":"d4e6a5f1b2ca","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":30000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-10","medio":"TRANSF","concepto":"dron accesorio","codigo":""},{"id":"e5f1b6a2c3da","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":85000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-04-11","medio":"TRANSF","concepto":"cotizacion varios","codigo":""},{"id":"f6a2c1b3d4ea","tipo":"egreso","estado":"pagado","categoria":"nomina empleados","valor":800000,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-03-20","medio":"TRANSF","concepto":"nomina marzo","codigo":""},{"id":"a1b3e2c4d5fa","tipo":"egreso","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"2026-03-20","medio":"EFECTI","concepto":"retiro efectivo","codigo":""},{"id":"b2c4f3e5a6da","tipo":"egreso","estado":"pagado","categoria":"mantenimiento","valor":100000,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-03-20","medio":"EFECTI","concepto":"pago shopify hp","codigo":""},{"id":"c3d5a4f6b1ea","tipo":"ingreso","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"entidad":"samuel","direccion":"entra","fecha":"2026-03-20","medio":"TRANSF","concepto":"pago deuda samuel","codigo":""},{"id":"d4e6b5a1c2fa","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":237000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-03-24","medio":"TRANSF","concepto":"Cot 022603 NINA GATO","codigo":""},{"id":"e5f1c6b2d3aa","tipo":"egreso","estado":"pendiente","categoria":"inversion","valor":30000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-03-29","medio":"TRANSF","concepto":"Claywoven patreon addon","codigo":""},{"id":"f6a2d1c3e4ba","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":280000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-05","medio":"TRANSF","concepto":"Piezas Nissan","codigo":""},{"id":"a1b3f2d4c5ca","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":150000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-04-06","medio":"TRANSF","concepto":"filamento NARANJA","codigo":""},{"id":"b2c4a3e5d6da","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":400000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA pago pendiente","codigo":""},{"id":"c3d5b4f6e1ea","tipo":"egreso","estado":"pagado","categoria":"reabastecimiento","valor":225000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA compra","codigo":""}];
-}
+function seed(){return [{"id":"a1b2c3d4e5f6","tipo":"adelanto","estado":"pendiente","categoria":"reabastecimiento","valor":160000,"iva":0,"quien":"nicolas","fecha":"2026-01-20","medio":"TRANSF","concepto":"PLA NEGRO POLYMASTER","codigo":""},{"id":"f6a1c2b3d4e2","tipo":"adelanto","estado":"pagado","categoria":"inversion","valor":407000,"iva":0,"quien":"nicolas","fecha":"2026-01-13","medio":"TRANSF","concepto":"MADERA ORITO ROBLE","codigo":""},{"id":"b2c3d4e5f6a1","tipo":"adelanto","estado":"pagado","categoria":"mantenimiento","valor":73450,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"I+D switches y 3ra mano","codigo":"didacticas eletc"},{"id":"c3d4e5f6a1b2","tipo":"venta","estado":"pendiente","categoria":"cotizacion","valor":30000,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"repuesto moto","codigo":""},{"id":"d4e5f6a1b2c3","tipo":"venta","estado":"pendiente","categoria":"cotizacion","valor":80000,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"piezas dragon","codigo":""},{"id":"a1b2c3d4e5g1","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":58137,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3mm","codigo":"DRONES"},{"id":"b2c3d4e5f6b1","tipo":"adelanto","estado":"pendiente","categoria":"reabastecimiento","valor":82911,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"fresas fibra 3 set x10","codigo":"DRONES"},{"id":"c3d4e5f6a2b1","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":20280,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 125x75 3mm","codigo":"DRONES"},{"id":"d4e5f6a1c2b1","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":129406,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x400 3mm","codigo":"DRONES"},{"id":"e5f6a1b3c2d1","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":142574,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Tornilleria","codigo":"DRONES"},{"id":"f6a1b2d3c4e1","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":179434,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 3mm","codigo":"DRONES"},{"id":"a1b3c2d4e5f1","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":124300,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3.5mm","codigo":"DRONES"},{"id":"b2c4d3e5f6a5","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":147540,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 2.5mm","codigo":"DRONES"},{"id":"c3d5e4f6a1b6","tipo":"adelanto","estado":"pendiente","categoria":"reabastecimiento","valor":59622,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Fresas 2mm x10","codigo":"DRONES"},{"id":"d4e6f5a1b2c7","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":128302,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placas 200x300 3mm x2","codigo":"DRONES"},{"id":"e5f1a6b2c3d8","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":90000,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"cajas x10","codigo":"DRONES"},{"id":"f6a2b1c3d4e9","tipo":"adelanto","estado":"pendiente","categoria":"inversion drones","valor":10000,"iva":0,"quien":"nicolas","fecha":"2026-02-01","medio":"TRANSF","concepto":"straps x10","codigo":"DRONES"},{"id":"e5f6a1b2c3d4","tipo":"adelanto","estado":"pendiente","categoria":"cotizacion","valor":158000,"iva":0,"quien":"nicolas","fecha":"2026-02-02","medio":"TRANSF","concepto":"filamento PETG blanco","codigo":"POLYMASTERS"},{"id":"f6a1b2c3d4e5","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":1798000,"iva":341620,"quien":"la nevera","fecha":"2026-02-05","medio":"TRANSF","concepto":"OZ studio 012605 50%","codigo":"COT-012605"},{"id":"a1b2c3d4e5f7","tipo":"venta","estado":"pagado","categoria":"inversion drones","valor":60000,"iva":0,"quien":"cliente","fecha":"2026-02-05","medio":"TRANSF","concepto":"repuesto fibra oasis","codigo":""},{"id":"b2c3d4e5f6a2","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"quien":"nicolas","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision","codigo":""},{"id":"c3d4e5f6a1b3","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"quien":"nicolas","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision #2","codigo":""},{"id":"d4e5f6a1b2c4","tipo":"venta","estado":"pendiente","categoria":"cliente referido LN","valor":332700,"iva":0,"quien":"la nevera","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Taima","codigo":""},{"id":"e5f6a1b2c3d5","tipo":"venta","estado":"pendiente","categoria":"cliente referido LN","valor":330000,"iva":0,"quien":"la nevera","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Camilax","codigo":""},{"id":"f6a1b2c3d4e6","tipo":"venta","estado":"pagado","categoria":"inversion drones","valor":150000,"iva":0,"quien":"cliente","fecha":"2026-02-11","medio":"TRANSF","concepto":"frame nav25","codigo":"JUAN PABLO ZULUAGA"},{"id":"a1b2c3d4e5f8","tipo":"gasto","estado":"pagado","categoria":"cotizacion","valor":1165866,"iva":0,"quien":"la nevera","fecha":"2026-02-11","medio":"TRANSF","concepto":"madera TECA","codigo":"FACTURA 123456"},{"id":"b2c3d4e5f6a3","tipo":"adelanto","estado":"pagado","categoria":"cotizacion","valor":89300,"iva":0,"quien":"nicolas","fecha":"2026-02-12","medio":"TRANSF","concepto":"LIJA THINNER","codigo":"PINTURAS SANTA FE"},{"id":"c3d4e5f6a1b4","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"quien":"nicolas","fecha":"2026-02-15","medio":"TRANSF","concepto":"zapatos oasis","codigo":""},{"id":"d4e5f6a1b2c5","tipo":"adelanto","estado":"pendiente","categoria":"cotizacion","valor":64000,"iva":0,"quien":"nicolas","fecha":"2026-02-18","medio":"TRANSF","concepto":"ACEITE DE COCO","codigo":"Cot 012605-1"},{"id":"e5f6a1b2c3d6","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":50000,"iva":0,"quien":"nicolas","fecha":"2026-02-20","medio":"TRANSF","concepto":"case fpv","codigo":""},{"id":"f6a1b2c3d4e7","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"quien":"nicolas","fecha":"2026-02-25","medio":"TRANSF","concepto":"camera hold","codigo":""},{"id":"a1b2c3d4e5f9","tipo":"venta","estado":"pendiente","categoria":"cliente referido LN","valor":50000,"iva":0,"quien":"la nevera","fecha":"2026-02-25","medio":"TRANSF","concepto":"Impresion parlantes","codigo":""},{"id":"b2c3d4e5f6a4","tipo":"gasto","estado":"pagado","categoria":"cotizacion","valor":23800,"iva":0,"quien":"proveedor","fecha":"2026-02-26","medio":"TRANSF","concepto":"imanes","codigo":""},{"id":"c3d4e5f6a1b5","tipo":"adelanto","estado":"pendiente","categoria":"cotizacion","valor":37800,"iva":0,"quien":"nicolas","fecha":"2026-02-27","medio":"TRANSF","concepto":"masilla","codigo":"Cot 012605-1"},{"id":"d4e5f6a1b2c6","tipo":"venta","estado":"pendiente","categoria":"cotizacion","valor":52500,"iva":0,"quien":"cliente","fecha":"2026-03-03","medio":"TRANSF","concepto":"bases de pino recompra","codigo":"Cot 022604-2"},{"id":"e5f6a1b2c3d7","tipo":"venta","estado":"pendiente","categoria":"cotizacion","valor":1721474,"iva":327080,"quien":"la nevera","fecha":"2026-03-04","medio":"TRANSF","concepto":"Tablas pizza teca 50% restante","codigo":"Cot 012605-1"},{"id":"f6a1b2c3d4e8","tipo":"gasto","estado":"pagado","categoria":"cotizacion","valor":55502,"iva":0,"quien":"proveedor","fecha":"2026-03-05","medio":"TRANSF","concepto":"tablones pino madecentro","codigo":"Cot 022602"},{"id":"d4e5a6f1b2c9","tipo":"adelanto","estado":"pagado","categoria":"reabastecimiento","valor":30000,"iva":0,"quien":"samuel","fecha":"2026-03-06","medio":"TRANSF","concepto":"BOLILLOS MADERA DOLLARCITY","codigo":"BOLILLOS MADERA"},{"id":"e5f6b1a2c3d2","tipo":"adelanto","estado":"pendiente","categoria":"cotizacion","valor":74700,"iva":0,"quien":"nicolas","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"id":"a1b3d2c4e5fa","tipo":"adelanto","estado":"pagado","categoria":"cotizacion","valor":84000,"iva":0,"quien":"samuel","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"id":"b2c4e3d5f6a7","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":1000000,"iva":0,"quien":"la nevera","fecha":"2026-03-11","medio":"TRANSF","concepto":"PAGO 1M lanevera","codigo":""},{"id":"f6a2c1b3d4ea","tipo":"gasto","estado":"pagado","categoria":"nomina empleados","valor":800000,"iva":0,"quien":"proveedor","fecha":"2026-03-20","medio":"TRANSF","concepto":"nomina marzo","codigo":""},{"id":"a1b3e2c4d5fa","tipo":"prestamo","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"quien":"samuel","dir":"3d-sam","fecha":"2026-03-20","medio":"EFECTI","concepto":"retiro efectivo","codigo":""},{"id":"b2c4f3e5a6da","tipo":"gasto","estado":"pagado","categoria":"mantenimiento","valor":100000,"iva":0,"quien":"proveedor","fecha":"2026-03-20","medio":"EFECTI","concepto":"pago shopify hp","codigo":""},{"id":"c3d5a4f6b1ea","tipo":"prestamo","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"quien":"samuel","dir":"sam-3d","fecha":"2026-03-20","medio":"TRANSF","concepto":"pago deuda samuel","codigo":""},{"id":"d4e6b5a1c2fa","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":237000,"iva":0,"quien":"la nevera","fecha":"2026-03-24","medio":"TRANSF","concepto":"Cot 022603 NINA GATO","codigo":""},{"id":"e5f1c6b2d3aa","tipo":"adelanto","estado":"pendiente","categoria":"inversion","valor":30000,"iva":0,"quien":"nicolas","fecha":"2026-03-29","medio":"TRANSF","concepto":"Claywoven patreon addon","codigo":""},{"id":"f6a2d1c3e4ba","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":280000,"iva":0,"quien":"nicolas","fecha":"2026-04-05","medio":"TRANSF","concepto":"Piezas Nissan","codigo":""},{"id":"a1b3f2d4c5ca","tipo":"adelanto","estado":"pagado","categoria":"cotizacion","valor":150000,"iva":0,"quien":"nicolas","fecha":"2026-04-06","medio":"TRANSF","concepto":"filamento NARANJA","codigo":""},{"id":"c3d5f4e6a1b9","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":450000,"iva":0,"quien":"nicolas","fecha":"2026-04-10","medio":"TRANSF","concepto":"3 frames nav25","codigo":""},{"id":"d4e6a5f1b2ca","tipo":"venta","estado":"pendiente","categoria":"inversion drones","valor":30000,"iva":0,"quien":"nicolas","fecha":"2026-04-10","medio":"TRANSF","concepto":"dron accesorio","codigo":""},{"id":"e5f1b6a2c3da","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":85000,"iva":0,"quien":"cliente","fecha":"2026-04-11","medio":"TRANSF","concepto":"cotizacion varios","codigo":""},{"id":"b2c4a3e5d6da","tipo":"venta","estado":"pendiente","categoria":"cotizacion","valor":400000,"iva":0,"quien":"nicolas","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA pago pendiente","codigo":""},{"id":"c3d5b4f6e1ea","tipo":"adelanto","estado":"pagado","categoria":"reabastecimiento","valor":225000,"iva":0,"quien":"nicolas","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA compra","codigo":""},{"id":"a1b2c3d5e6f1","tipo":"venta","estado":"pendiente","categoria":"cotizacion","valor":93000,"iva":0,"quien":"nicolas","fecha":"","medio":"TRANSF","concepto":"llave filtro","codigo":"JULIANA ARANGO"},{"id":"b2c3d4f5a6e1","tipo":"venta","estado":"pagado","categoria":"inversion drones","valor":25000,"iva":0,"quien":"cliente","fecha":"","medio":"TRANSF","concepto":"canopy","codigo":""},{"id":"c3d4e5a6f1b7","tipo":"comision","estado":"pendiente","categoria":"referido 3DUNA","valor":42500,"iva":0,"quien":"la nevera","dir":"3d-ln","fecha":"","medio":"TRANSF","concepto":"Comision 10% Corte Laser Selva","codigo":""},{"id":"d4e5f6b1a2c8","tipo":"venta","estado":"pagado","categoria":"cliente referido LN","valor":340000,"iva":0,"quien":"cliente","fecha":"","medio":"EFECTI","concepto":"WILLIAM gymcats","codigo":""},{"id":"e5f6a1c2b3d9","tipo":"prestamo","estado":"pendiente","categoria":"prestamo","valor":90000,"iva":0,"quien":"samuel","dir":"3d-sam","fecha":"","medio":"EFECTI","concepto":"PRESTAMO SAM","codigo":""},{"id":"f6a1b2e3c4d1","tipo":"prestamo","estado":"pendiente","categoria":"prestamo","valor":50000,"iva":0,"quien":"samuel","dir":"sam-3d","fecha":"","medio":"TRANSF","concepto":"PAGO SAM","codigo":""},{"id":"a1b2c4d3e5f2","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":52500,"iva":0,"quien":"cliente","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022604-2","codigo":"022604-2"},{"id":"b2c3e4d5f6a6","tipo":"venta","estado":"pagado","categoria":"cotizacion","valor":113000,"iva":0,"quien":"cliente","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022602","codigo":"022602-1"},{"id":"c3d4f5e6a1b8","tipo":"adelanto","estado":"pendiente","categoria":"reabastecimiento","valor":147000,"iva":0,"quien":"nicolas","fecha":"","medio":"TRANSF","concepto":"Polipropileno zuluprints","codigo":""}];}
 
-async function init() {
-  document.getElementById('load-msg').textContent = 'Cargando datos...';
-  await loadData();
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('shell').style.display = 'grid';
+async function init(){
+  $('lmsg').textContent='Cargando datos...';
+  await load();
+  $('loading').style.display='none';
+  $('shell').style.display='grid';
   renderFeed();
-  updateUndoBtn();
-  setInterval(async()=>{ await loadData(); renderAll(); }, 60000);
+  setInterval(async()=>{await load();renderAll()},60000);
 }
-
 init();
 </script>
 </body>
