@@ -742,10 +742,14 @@ async function saveTx(){
 }
 
 // ── ACTIONS ──
-async function toggleEstado(id){
+async async function toggleEstado(id){
   snap(); const t=tx.find(t=>t.id===id); if(!t)return;
   t.estado=t.estado==='pendiente'?'pagado':'pendiente';
-  renderAll(); await saveData();
+  // Para adelantos: pagado = reembolsado, pendiente = no reembolsado
+  if(t.tipo==='adelanto'&&!t.abono_dir){
+    t.reembolsado = t.estado==='pagado';
+  }
+  renderAll(); await save();
   showToast(t.estado==='pagado'?'✓ Pagado':'↩ Revertido');
 }
 
