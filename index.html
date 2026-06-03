@@ -395,7 +395,7 @@ function renderFeed(){
 function txRow(t){
   const c=tipoColor(t.tipo);
   const idx=tx.indexOf(t);
-  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d');
+  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d')||(t.tipo==='adelanto'&&t.abono_dir);
   const valColor=isPos?'var(--green)':'var(--red)';
   const sign=isPos?'+':'−';
   const tipInfo=TIPOS[t.tipo]||{label:t.tipo};
@@ -424,9 +424,11 @@ function renderBalances(){
   const el=$('bal-grid');
 
   // 1. Nicolas — 3DUNA le debe (adelantos pendientes)
+  // Adelantos nicolas: pago-prov suman deuda, abono-dir la reducen
   const nicPend=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.estado==='pendiente');
   const nicPaid=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.estado==='pagado');
-  const nicDebt=nicPend.reduce((s,t)=>s+t.valor,0);
+  const nicDebt=nicPend.filter(t=>!t.abono_dir).reduce((s,t)=>s+t.valor,0)
+               -nicPend.filter(t=>t.abono_dir).reduce((s,t)=>s+t.valor,0);
   const nicPaidA=nicPaid.reduce((s,t)=>s+t.valor,0);
 
   // 2. La Nevera — neto = lo que debe (ventas) MENOS lo que pagó a proveedores por 3DUNA
@@ -521,7 +523,8 @@ function balCard(name,color,num,desc,rows,detail){
 
 // ── RESUMEN ──
 function renderResumen(){
-  const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
+  const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0)
+            +tx.filter(t=>t.tipo==='adelanto'&&t.abono_dir&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
   const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
   const saldo=SALDO0+inP-outP;
   const cobrar=tx.filter(t=>t.tipo==='venta'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
@@ -567,6 +570,7 @@ function renderResumen(){
   let bal=SALDO0;const pts=[{x:'Inicio',y:bal}];
   sorted.forEach(t=>{
     if(t.tipo==='venta')bal+=neto(t);
+    if(t.tipo==='adelanto'&&t.abono_dir)bal+=t.valor;
     if(['gasto','adelanto'].includes(t.tipo))bal-=t.valor;
     pts.push({x:t.fecha,y:bal});
   });
@@ -622,7 +626,7 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">¿Ya pagado?</label>${estadoToggle()}</div>
   `,
   adelanto: () => `
-    <div class="fhint">Un socio o La Nevera paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
+    <div class="fhint">Un socio paga por 3DUNA (gasto) o abona a una deuda directamente (ingreso positivo)</div>
     <div class="frow">
       <div class="fg"><label class="fl">¿Quién adelantó?</label>
         <select class="fs" id="f-quien">
@@ -770,6 +774,9 @@ async function saveTx(){
   if(!v){toast('Ingresa un valor');return}
   snap();
   const btn=$('sbtn');btn.disabled=true;btn.textContent='Guardando...';
+  const dirVal=val('f-dir');
+  // Adelanto tipo "abono directo" es positivo — entra dinero a 3DUNA
+  const esAbonoDir=curTipo==='adelanto'&&dirVal==='deuda-dir';
   const entry={
     id:editId||uid(),tipo:curTipo,estado:newEstado,
     valor:v,iva:parseFloat(val('f-iva'))||0,
@@ -777,7 +784,8 @@ async function saveTx(){
     categoria:val('f-cat'),
     concepto:val('f-con'),fecha:val('f-fec'),
     medio:val('f-med'),codigo:val('f-cod'),
-    dir:val('f-dir'),
+    dir:dirVal,
+    abono_dir:esAbonoDir,
     created_at:editId?(tx.find(t=>t.id===editId)||{}).created_at:new Date().toISOString()
   };
   if(editId){const i=tx.findIndex(t=>t.id===editId);if(i>-1)tx[i]=entry}
