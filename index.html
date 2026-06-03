@@ -397,10 +397,18 @@ function renderBalances(){
   const lnDebt=lnCobrar.reduce((s,t)=>s+neto(t),0);
   const lnPaidA=lnCobrado.reduce((s,t)=>s+neto(t),0);
 
-  // 3. Samuel — préstamos pendientes
+  // 3. Samuel — neto basado solo en préstamos PENDIENTES
+  // Solo lo pendiente determina quién le debe a quién ahora
   const samPend=tx.filter(t=>t.tipo==='prestamo'&&t.estado==='pendiente');
-  const sam3d=samPend.filter(t=>t.dir==='3d-sam').reduce((s,t)=>s+t.valor,0);
-  const sam3dR=samPend.filter(t=>t.dir==='sam-3d').reduce((s,t)=>s+t.valor,0);
+  const sam3d=samPend.filter(t=>t.dir==='3d-sam').reduce((s,t)=>s+t.valor,0);    // 3DUNA le prestó a Samuel → Samuel debe devolver esto
+  const sam3dR=samPend.filter(t=>t.dir==='sam-3d').reduce((s,t)=>s+t.valor,0);   // Samuel ya devolvió / pagó esto
+  // Neto: sam3d - sam3dR = lo que Samuel le debe a 3DUNA
+  // positivo = Samuel le debe a 3DUNA; negativo = 3DUNA le debe a Samuel
+  const samNeto=sam3d-sam3dR;
+  // Totales históricos para referencia
+  const samAll=tx.filter(t=>t.tipo==='prestamo');
+  const sam3dTotal=samAll.filter(t=>t.dir==='3d-sam').reduce((s,t)=>s+t.valor,0);
+  const sam3dRTotal=samAll.filter(t=>t.dir==='sam-3d').reduce((s,t)=>s+t.valor,0);
 
   // 4. Comisiones
   const comLN=tx.filter(t=>t.tipo==='comision'&&t.dir==='ln-3d'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
@@ -429,9 +437,13 @@ function renderBalances(){
       lnCobrar.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(neto(t))}${t.iva?'<span style="color:var(--t3);font-size:9px"> +IVA '+fmt(t.iva)+'</span>':''}</span></div>`).join('')+
       (lnCobrar.length>4?`<div class="bal-more">+${lnCobrar.length-4} más pendientes</div>`:'')
     )}
-    ${balCard('Samuel','#2dd4bf',Math.abs(sam3d-sam3dR),
-      sam3d>sam3dR?'3DUNA le debe a Samuel':sam3dR>sam3d?'Samuel le debe a 3DUNA':'En equilibrio',
-      [['3DUNA→Samuel pend.',fmt(sam3d),'var(--red)'],['Samuel→3DUNA pend.',fmt(sam3dR),'var(--green)']],''
+    ${balCard('Samuel','#2dd4bf',Math.abs(samNeto),
+      samNeto>0?'Samuel le debe a 3DUNA':samNeto<0?'3DUNA le debe a Samuel':'En equilibrio',
+      [
+        ['Samuel debe devolver',fmt(sam3d),'var(--amber)'],
+        ['Ya devuelto / pagado',fmt(sam3dR),'var(--green)'],
+        ['Historial total',fmt(sam3dTotal)+' / '+fmt(sam3dRTotal),'var(--t3)'],
+      ],''
     )}
     ${balCard('Comisiones','#60a5fa',comLN+com3D,
       'Comisiones pendientes',
