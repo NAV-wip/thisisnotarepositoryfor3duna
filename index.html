@@ -257,13 +257,14 @@ let filt = {tipo:'', estado:''};
 let charts = {};
 let editId = null;
 
+const $ = id => document.getElementById(id);
+const gval = id => { const e = $(id); return e ? e.value : ''; };
+
 // ── UTILS ──
 const fmt  = n => '$' + Math.round(n).toLocaleString('es-CO');
 const fmtS = n => n>=1000000?'$'+(n/1000000).toFixed(2).replace(/\.?0+$/,'')+'M':n>=1000?'$'+(n/1000).toFixed(1).replace(/\.?0+$/,'')+'K':fmt(n);
 const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const byD  = (a,b) => (b.fecha||'').localeCompare(a.fecha||'');
-const $    = id => document.getElementById(id);
-const gval = id => ($( id)||{value:''}).value||'';
 const neto = t  => t.valor - (t.iva||0);
 
 // ── TIPO CONFIG ──
