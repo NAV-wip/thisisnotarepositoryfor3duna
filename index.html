@@ -187,19 +187,19 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px
           <div class="filter-label">Tipo</div>
           <div class="pill-row">
             <button class="pill on" data-f="tipo" data-v="" onclick="setPill(this)">Todos</button>
-            <button class="pill" data-f="tipo" data-v="venta" onclick="setPill(this)">💰 Ventas</button>
-            <button class="pill" data-f="tipo" data-v="adelanto" onclick="setPill(this)">🤝 Adelantos</button>
-            <button class="pill" data-f="tipo" data-v="gasto" onclick="setPill(this)">🧾 Gastos</button>
-            <button class="pill" data-f="tipo" data-v="prestamo" onclick="setPill(this)">🔄 Préstamos</button>
-            <button class="pill" data-f="tipo" data-v="comision" onclick="setPill(this)">📊 Comisiones</button>
+            <button class="pill" data-f="tipo" data-v="venta" onclick="setPill(this)">Ventas</button>
+            <button class="pill" data-f="tipo" data-v="adelanto" onclick="setPill(this)">Adelantos</button>
+            <button class="pill" data-f="tipo" data-v="gasto" onclick="setPill(this)">Gastos</button>
+            <button class="pill" data-f="tipo" data-v="prestamo" onclick="setPill(this)">Préstamos</button>
+            <button class="pill" data-f="tipo" data-v="comision" onclick="setPill(this)">Comisiones</button>
           </div>
         </div>
         <div class="filter-block">
           <div class="filter-label">Estado</div>
           <div class="pill-row">
             <button class="pill on" data-f="estado" data-v="" onclick="setPill(this)">Todos</button>
-            <button class="pill" data-f="estado" data-v="pendiente" onclick="setPill(this)">⏳ Pendiente</button>
-            <button class="pill" data-f="estado" data-v="pagado" onclick="setPill(this)">✓ Pagado</button>
+            <button class="pill" data-f="estado" data-v="pendiente" onclick="setPill(this)">Pendiente</button>
+            <button class="pill" data-f="estado" data-v="pagado" onclick="setPill(this)">Pagado</button>
           </div>
         </div>
       </div>
@@ -276,12 +276,12 @@ async function save(silent){
   try{
     const r=await fetch(BURL,{method:'PUT',headers:WH,body:JSON.stringify({transactions:tx,v:2,saldo0:SALDO0})});
     if(!r.ok)throw 0;
-    setS('ok','✓ '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
+    setS('ok',''+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
     return true;
   }catch{setS('err','Error');return false}
 }
 
-async function syncNow(){await load();renderAll();toast('✓ Sincronizado')}
+async function syncNow(){await load();renderAll();toast('Sincronizado')}
 
 // ── HISTORY ──
 function snap(){hist.push(JSON.stringify(tx));if(hist.length>20)hist.shift();fut=[];$('undo-rb').style.opacity='1'}
@@ -359,6 +359,7 @@ function txRow(t){
   const valColor=isPos?'var(--green)':'var(--red)';
   const sign=isPos?'+':'−';
   const tipInfo=TIPOS[t.tipo]||{label:t.tipo};
+  const displayVal=t.iva?neto(t):t.valor;
   return `<div class="tx-row">
     <div class="tx-bar" style="background:${c};opacity:${t.estado==='pagado'?'1':'.35'}"></div>
     <div class="tx-body">
@@ -513,7 +514,7 @@ let curTipo = 'venta';
 
 const TYPE_FORMS = {
   venta: () => `
-    <div class="fhint">💰 El cliente paga a 3DUNA — directo o a través de La Nevera</div>
+    <div class="fhint">El cliente paga a 3DUNA — directo o a través de La Nevera</div>
     <div class="frow">
       <div class="fg"><label class="fl">¿Quién paga?</label>
         <select class="fs" id="f-quien"><option value="cliente">Cliente directo</option><option value="la nevera">La Nevera</option><option value="nicolas">Vía Nicolás</option></select></div>
@@ -533,7 +534,7 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="COT-XXXXX"></div>
   `,
   gasto: () => `
-    <div class="fhint">🧾 3DUNA paga directamente al proveedor</div>
+    <div class="fhint">3DUNA paga directamente al proveedor</div>
     <div class="frow">
       <div class="fg"><label class="fl">Categoría</label><select class="fs" id="f-cat">${catOptions()}</select></div>
       <div class="fg"><label class="fl">Proveedor</label><input class="fi" type="text" id="f-quien" placeholder="Nombre proveedor"></div>
@@ -550,7 +551,7 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">¿Ya pagado?</label>${estadoToggle()}</div>
   `,
   adelanto: () => `
-    <div class="fhint">🤝 El socio paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
+    <div class="fhint">El socio paga de su bolsillo por 3DUNA — 3DUNA le debe reembolsar</div>
     <div class="frow">
       <div class="fg"><label class="fl">¿Quién adelantó?</label>
         <select class="fs" id="f-quien"><option value="nicolas">Nicolás</option><option value="samuel">Samuel</option></select></div>
@@ -565,7 +566,7 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
   `,
   prestamo: () => `
-    <div class="fhint">🔄 Movimiento de dinero entre 3DUNA y Samuel</div>
+    <div class="fhint">Movimiento de dinero entre 3DUNA y Samuel</div>
     <div class="fg"><label class="fl">Dirección del préstamo</label>
       <select class="fs" id="f-dir">
         <option value="3d-sam">3DUNA le da plata a Samuel</option>
@@ -580,7 +581,7 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Completado')}</div>
   `,
   comision: () => `
-    <div class="fhint">📊 Comisión entre La Nevera y 3DUNA por referidos</div>
+    <div class="fhint">Comisión entre La Nevera y 3DUNA por referidos</div>
     <div class="fg"><label class="fl">Dirección</label>
       <select class="fs" id="f-dir">
         <option value="ln-3d">La Nevera refirió cliente → Le deben comisión a La Nevera</option>
@@ -618,7 +619,7 @@ function typeGrid(){
   return `<div class="type-grid">
     ${Object.entries(TIPOS).map(([k,v])=>`
       <div class="type-card ${k===curTipo?'on':''}" onclick="setTipo('${k}')" id="tc-${k}" style="${k===curTipo?`border-color:${v.color};background:${v.color}12`:''}">
-        <div class="type-ico" style="background:${v.color}18">${{venta:'💰',gasto:'🧾',adelanto:'🤝',prestamo:'🔄',comision:'📊'}[k]}</div>
+        <div class="type-ico" style="background:${v.color}18">${{'venta':'','gasto':'','adelanto':'','prestamo':'','comision':''}[k]||''}</div>
         <div class="type-info"><div class="type-name">${v.label}</div><div class="type-desc">${v.desc}</div></div>
       </div>`).join('')}
   </div>`;
@@ -675,7 +676,7 @@ async function saveTx(){
   else tx.unshift(entry);
   closeModal();renderAll();
   const ok=await save();
-  toast(ok?'✓ Guardado':'⚠ Sin conexión — guardado local');
+  toast(ok?'Guardado':'⚠ Sin conexión — guardado local');
   btn.disabled=false;btn.textContent='Guardar';
 }
 
@@ -684,7 +685,7 @@ async function toggleE(id){
   snap();const t=tx.find(t=>t.id===id);if(!t)return;
   t.estado=t.estado==='pendiente'?'pagado':'pendiente';
   renderAll();await save();
-  toast(t.estado==='pagado'?'✓ Pagado':'↩ Revertido');
+  toast(t.estado==='pagado'?'Pagado':'↩ Revertido');
 }
 
 async function delTx(id){
