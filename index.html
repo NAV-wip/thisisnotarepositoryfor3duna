@@ -248,7 +248,7 @@ const SALDO0  = 815000;
 let tx = [], hist = [], fut = [], filt = {tipo:'',estado:''}, charts = {}, editId = null, newEstado = 'pendiente';
 
 const fmt  = n => '$' + Math.round(n).toLocaleString('es-CO');
-const fmtS = n => n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':fmt(n);
+const fmtS = n => n>=1000000?'$'+(n/1000000).toFixed(2).replace(/\.?0+$/,'')+'M':n>=1000?'$'+(n/1000).toFixed(1).replace(/\.?0+$/,'')+'K':fmt(n);
 const uid  = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const byD  = (a,b) => (b.fecha||'').localeCompare(a.fecha||'');
 const neto = t => t.valor - (t.iva || 0);  // La Nevera retiene el IVA — 3DUNA recibe el neto
