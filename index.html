@@ -373,7 +373,8 @@ function txRow(t){
     <div class="tx-val" style="color:${valColor}">${sign}${fmt(displayVal)}${t.iva?`<span style="font-size:9px;color:var(--t3);font-family:var(--font)"> neto</span>`:''}</div>
     <div class="tx-actions">
       <button class="s-btn ${t.estado==='pendiente'?'s-p':'s-pg'}" onclick="toggleE('${t.id}')">${t.estado==='pendiente'?'pendiente':'pagado'}</button>
-      <button class="del" onclick="delTx('${t.id}')">×</button>
+      <button class="del" onclick="openModal('${t.id}')" title="Editar">✎</button>
+      <button class="del" onclick="delTx('${t.id}')" title="Eliminar">×</button>
     </div>
   </div>`;
 }
