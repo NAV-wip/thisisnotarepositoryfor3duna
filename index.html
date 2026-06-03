@@ -750,8 +750,8 @@ async function saveTx(){
 async function toggleEstado(id){
   snap(); const t=tx.find(t=>t.id===id); if(!t)return;
   t.estado=t.estado==='pendiente'?'pagado':'pendiente';
-  // Para adelantos: pagado = reembolsado, pendiente = no reembolsado
-  if(t.tipo==='adelanto'&&!t.abono_dir){
+  // Para adelantos pago-prov: pagado = reembolsado, pendiente = no reembolsado
+  if(t.tipo==='adelanto' && t.dir!=='deuda-dir'){
     t.reembolsado = t.estado==='pagado';
   }
   renderAll(); await saveData();
