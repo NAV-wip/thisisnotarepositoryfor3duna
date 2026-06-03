@@ -806,6 +806,8 @@ async function toggleEstado(id){
 async function toggleReemb(id){
   snap(); const t=tx.find(t=>t.id===id); if(!t)return;
   t.reembolsado=!t.reembolsado;
+  // Sincronizar estado con reembolsado para que los filtros de balance funcionen
+  t.estado = t.reembolsado ? 'pagado' : 'pendiente';
   renderAll(); await saveData();
   showToast(t.reembolsado?'✓ Confirmado':'↩ Pendiente');
 }
