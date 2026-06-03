@@ -382,7 +382,7 @@ function groupByMonth(list){
 function txRow(t){
   const cfg=TIPOS[t.tipo]||{label:t.tipo,color:'#888'};
   const c=cfg.color;
-  const isAbono=t.tipo==='adelanto'&&t.dir==='deuda-dir';
+  const isAbono=t.tipo==='adelanto'&&(t.dir==='deuda-dir'||t.abono_dir===true);
   const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d')||isAbono;
   const valColor=isPos?'var(--green)':'var(--red)';
   const sign=isPos?'+':'−';
@@ -441,13 +441,13 @@ function renderBalances(){
   // ── Nicolás ──
   // Debe a 3DUNA: ventas cobradas vía él (ya pagadas) + abonos directos pagados
   // 3DUNA le debe: adelantos pago-prov aún no reembolsados
-  const nicAdelantos  = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.dir!=='deuda-dir');
+  const nicAdelantos  = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.dir!=='deuda-dir'&&!t.abono_dir);
   const nicDeuda      = nicAdelantos.filter(t=>!t.reembolsado).reduce((s,t)=>s+t.valor,0);
   const nicReemb      = nicAdelantos.filter(t=>t.reembolsado).reduce((s,t)=>s+t.valor,0);
   const nicVentasPag  = tx.filter(t=>t.tipo==='venta'&&t.quien==='nicolas'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
   const nicVentasPend = tx.filter(t=>t.tipo==='venta'&&t.quien==='nicolas'&&t.estado==='pendiente').reduce((s,t)=>s+neto(t),0);
-  // Abonos directos PAGADOS reducen lo que 3DUNA le debe a Nicolas
-  const nicAbonoPag   = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.dir==='deuda-dir'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  // Abonos directos CONFIRMADOS (reembolsado=true) reducen lo que 3DUNA le debe a Nicolas
+  const nicAbonoPag   = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&(t.dir==='deuda-dir'||t.abono_dir===true)&&t.reembolsado===true).reduce((s,t)=>s+t.valor,0);
   // neto: positivo = 3DUNA le debe a Nicolas; negativo = Nicolas le debe a 3DUNA
   const nicNeto = nicDeuda - nicVentasPag - nicAbonoPag;
 
@@ -473,9 +473,9 @@ function renderBalances(){
   // Ventas vía Samuel pagadas reducen lo que le debemos
   const samVentasPag = tx.filter(t=>t.tipo==='venta'&&t.quien==='samuel'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
   // Adelantos de Samuel sin reembolso (3DUNA le debe)
-  const samDeuda = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='samuel'&&t.dir!=='deuda-dir'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
-  // Abonos directos de Samuel PAGADOS reducen lo que 3DUNA le debe
-  const samAbonoPag = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='samuel'&&t.dir==='deuda-dir'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const samDeuda = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='samuel'&&t.dir!=='deuda-dir'&&!t.abono_dir&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  // Abonos directos de Samuel CONFIRMADOS reducen lo que 3DUNA le debe
+  const samAbonoPag = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='samuel'&&(t.dir==='deuda-dir'||t.abono_dir===true)&&t.reembolsado===true).reduce((s,t)=>s+t.valor,0);
   // neto: positivo = Samuel le debe a 3DUNA; negativo = 3DUNA le debe a Samuel
   const samNeto = sam3d - sam3dR - samVentasPag + samDeuda - samAbonoPag;
 
@@ -767,6 +767,7 @@ async function saveTx(){
   snap();
   const btn=$('sbtn'); btn.disabled=true; btn.textContent='Guardando...';
   const isAbono=curTipo==='adelanto'&&gval('f-dir')==='deuda-dir';
+  // abono_dir flag para compatibilidad con datos viejos
   const entry={
     id: editId||uid(),
     tipo: curTipo,
@@ -780,6 +781,7 @@ async function saveTx(){
     medio: gval('f-med'),
     codigo: gval('f-cod'),
     dir: gval('f-dir'),
+    abono_dir: isAbono||undefined,
     reembolsado: curTipo==='adelanto'?newReemb:undefined,
     created_at: editId?(tx.find(t=>t.id===editId)||{}).created_at:new Date().toISOString()
   };
