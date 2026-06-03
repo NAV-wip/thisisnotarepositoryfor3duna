@@ -207,7 +207,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px
             <button class="pill" data-f="tipo" data-v="gasto" onclick="setPill(this)">Gastos</button>
             <button class="pill" data-f="tipo" data-v="prestamo" onclick="setPill(this)">Préstamos</button>
             <button class="pill" data-f="tipo" data-v="comision" onclick="setPill(this)">Comisiones</button>
-        <button class="pill" data-f="tipo" data-v="pago_ln" onclick="setPill(this)">Pagos LN</button>
+
           </div>
         </div>
         <div class="filter-block">
@@ -332,7 +332,7 @@ const TIPOS = {
   venta:    {label:'Venta / Servicio',    desc:'Cliente paga a 3DUNA',                color:'#4ade80', sign:'+'},
   gasto:    {label:'Gasto directo',       desc:'3DUNA paga a proveedor',               color:'#f87171', sign:'−'},
   adelanto: {label:'Adelanto de socio',   desc:'Nicolás o Samuel adelantan plata',     color:'#fbbf24', sign:'−'},
-  pago_ln:  {label:'Pago LN a proveedor', desc:'La Nevera paga por 3DUNA — descuenta su deuda', color:'#f97316', sign:'−'},
+
   prestamo: {label:'Préstamo interno',    desc:'3DUNA ↔ Samuel',                       color:'#60a5fa', sign:'±'},
   comision: {label:'Comisión / Referido', desc:'La Nevera ↔ 3DUNA',                   color:'#a78bfa', sign:'%'},
 };
@@ -484,22 +484,17 @@ function renderBalances(){
       nicPend.slice(0,4).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--amber)">${fmt(t.valor)}</span></div>`).join('')+
       (nicPend.length>4?`<div class="bal-more">+${nicPend.length-4} más pendientes</div>`:'' )
     )}
-    ${(()=>{
-      const totalDesc=lnPagoProvPend+lnAdelantoPend;
-      const detalleVentas=lnCobrar.slice(0,3).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(neto(t))}</span></div>`).join('');
-      const detallePagos=tx.filter(t=>t.tipo==='pago_ln'&&t.estado==='pendiente').slice(0,3).map(t=>`<div class="bal-item"><span class="bal-item-con" style="color:var(--orange)">${t.concepto||'Pago proveedor'}</span><span class="bal-item-val" style="color:var(--orange)">−${fmt(t.valor)}</span></div>`).join('');
-      return balCard('La Nevera','#a78bfa',Math.abs(lnNeto),
-        lnNeto>0?'La Nevera le debe a 3DUNA (neto)':lnNeto<0?'3DUNA le debe a La Nevera':'En equilibrio',
-        [
-          ['Ventas pendientes cobrar',fmt(lnDebt),'var(--purple)'],
-          ['Pagos LN a proveedores',fmt(lnPagoProvPend+lnAdelantoPend),'#f97316'],
-          ['Neto por cobrar',fmt(lnNeto),lnNeto>=0?'var(--green)':'var(--red)'],
-          ['IVA retenido LN',fmt(lnCobrar.reduce((s,t)=>s+(t.iva||0),0)+lnCobrado.reduce((s,t)=>s+(t.iva||0),0)),'var(--t3)'],
-          ['Ya cobrado',fmt(lnPaidA),'var(--green)'],
-        ],
-        detalleVentas+(totalDesc>0?`<div class="bal-item" style="border-top:1px dashed var(--b2);margin-top:4px"><span class="bal-item-con" style="color:#f97316">LN pagó a proveedores (descuento)</span><span class="bal-item-val" style="color:#f97316">−${fmt(totalDesc)}</span></div>`:'')+detallePagos
-      );
-    })()}
+    ${balCard('La Nevera','#a78bfa',Math.abs(lnNeto),
+      lnNeto>0?'La Nevera le debe a 3DUNA (neto)':lnNeto<0?'3DUNA le debe a La Nevera':'En equilibrio',
+      [
+        ['Ventas pendientes cobrar',fmt(lnDebt),'var(--purple)'],
+        ['Pagos LN a proveedores',fmt(lnPagoProvPend+lnAdelantoPend),'#f97316'],
+        ['Neto por cobrar',fmt(lnNeto),lnNeto>=0?'var(--green)':'var(--red)'],
+        ['IVA retenido LN',fmt(lnCobrar.reduce((s,t)=>s+(t.iva||0),0)+lnCobrado.reduce((s,t)=>s+(t.iva||0),0)),'var(--t3)'],
+        ['Ya cobrado',fmt(lnPaidA),'var(--green)'],
+      ],
+      lnCobrar.slice(0,3).map(t=>`<div class="bal-item"><span class="bal-item-con">${t.concepto||t.categoria}</span><span class="bal-item-val" style="color:var(--purple)">${fmt(neto(t))}</span></div>`).join('')
+    )}
     ${balCard('Samuel','#2dd4bf',Math.abs(samNeto),
       samNeto>0?'Samuel le debe a 3DUNA':samNeto<0?'3DUNA le debe a Samuel':'En equilibrio',
       [
