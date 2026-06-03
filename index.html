@@ -488,7 +488,6 @@ function renderBalances(){
       lnNeto>0?'La Nevera le debe a 3DUNA (neto)':lnNeto<0?'3DUNA le debe a La Nevera':'En equilibrio',
       [
         ['Ventas pendientes cobrar',fmt(lnDebt),'var(--purple)'],
-        ['Pagos LN a proveedores',fmt(lnPagoProvPend+lnAdelantoPend),'#f97316'],
         ['Neto por cobrar',fmt(lnNeto),lnNeto>=0?'var(--green)':'var(--red)'],
         ['IVA retenido LN',fmt(lnCobrar.reduce((s,t)=>s+(t.iva||0),0)+lnCobrado.reduce((s,t)=>s+(t.iva||0),0)),'var(--t3)'],
         ['Ya cobrado',fmt(lnPaidA),'var(--green)'],
