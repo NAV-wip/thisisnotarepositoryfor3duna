@@ -495,16 +495,27 @@ function setPTab(tab, el) {
 }
 
 function renderDeudas() {
+  // Lo que La Nevera le debe a 3DUNA (ingresos pendientes donde quien_debe=la nevera)
   const inNev  = tx.filter(t=>t.tipo==='ingreso'&&t.quien_debe==='la nevera'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-  const dNic   = tx.filter(t=>t.tipo==='egreso'&&t.quien_paga==='nicolas'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-  const dSam   = tx.filter(t=>t.estado==='pendiente'&&(t.quien_debe==='samuel'||t.quien_paga==='samuel')).reduce((s,t)=>s+t.valor,0);
+  // Lo que 3DUNA le debe a Nicolás: egresos pendientes que él pagó de su bolsillo (nicolas paga→3duna debe→proveedor recibe)
+  const d3DuNic = tx.filter(t=>t.tipo==='egreso'&&t.estado==='pendiente'&&t.quien_paga==='nicolas'&&t.quien_debe==='3duna'&&t.pago_a==='proveedor').reduce((s,t)=>s+t.valor,0);
+  // Lo que Nicolás gestiona y aún no ha cobrado para 3DUNA (ingresos pendientes via nicolas)
+  const nicCobrar = tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pendiente'&&t.quien_debe==='nicolas'&&t.pago_a==='3duna').reduce((s,t)=>s+t.valor,0);
+  // Lo que 3DUNA le debe a Samuel
+  const d3DuSam = tx.filter(t=>t.tipo==='egreso'&&t.estado==='pendiente'&&(t.quien_paga==='samuel'&&t.quien_debe==='3duna')||(t.quien_debe==='3duna'&&t.pago_a==='samuel')).reduce((s,t)=>s+t.valor,0);
   const comLN  = tx.filter(t=>t.tipo==='ingreso'&&t.categoria==='cliente referido LN'&&t.estado==='pagado').reduce((s,t)=>s+t.valor*0.1,0);
   const com3D  = tx.filter(t=>t.tipo==='ingreso'&&t.categoria==='referido 3DUNA'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
   const nevPag = tx.filter(t=>t.tipo==='egreso'&&t.quien_paga==='la nevera'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+
+  // Detail rows for nicolas
+  const nicDetalle = tx.filter(t=>t.tipo==='egreso'&&t.estado==='pendiente'&&t.quien_paga==='nicolas'&&t.quien_debe==='3duna'&&t.pago_a==='proveedor')
+    .map(t=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid rgba(255,255,255,0.05);font-size:10px"><span style="color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${t.concepto||t.categoria}</span><span style="font-family:var(--mono);color:#fbbf24">${fmt(t.valor)}</span></div>`).join('');
+
   document.getElementById('dg').innerHTML = `
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#f87171"></span>La Nevera debe</div><div class="damt" style="color:#4ade80">${fmt(inNev)}</div><div class="dsub">por cobrar pendiente</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#60a5fa"></span>Nicolás debe</div><div class="damt" style="color:#fbbf24">${fmt(dNic)}</div><div class="dsub">egresos pendientes</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#a78bfa"></span>Samuel</div><div class="damt" style="color:#fbbf24">${fmt(dSam)}</div><div class="dsub">movimientos pendientes</div></div>
+    <div class="dcard"><div class="dname"><span class="ddot" style="background:#f87171"></span>La Nevera debe a 3DUNA</div><div class="damt" style="color:#4ade80">${fmt(inNev)}</div><div class="dsub">por cobrar pendiente</div></div>
+    <div class="dcard"><div class="dname"><span class="ddot" style="background:#fbbf24"></span>3DUNA debe a Nicolás</div><div class="damt" style="color:#fbbf24">${fmt(d3DuNic)}</div><div class="dsub">gastos que él adelantó</div></div>
+    <div class="dcard"><div class="dname"><span class="ddot" style="background:#a78bfa"></span>3DUNA debe a Samuel</div><div class="damt" style="color:${d3DuSam>0?'#fbbf24':'#4ade80'}">${fmt(d3DuSam)}</div><div class="dsub">movimientos pendientes</div></div>
+    <div class="dcard"><div class="dname"><span class="ddot" style="background:#60a5fa"></span>Nicolás cobra para 3DUNA</div><div class="damt" style="color:#60a5fa">${fmt(nicCobrar)}</div><div class="dsub">ingresos pendientes que él gestiona</div></div>
     <div class="dcard"><div class="dname"><span class="ddot" style="background:#2dd4bf"></span>Comisión LN → 3D</div><div class="damt" style="color:#4ade80">${fmt(comLN)}</div><div class="dsub">10% referidos pagados</div></div>
     <div class="dcard"><div class="dname"><span class="ddot" style="background:#fbbf24"></span>Referidos 3D → LN</div><div class="damt" style="color:#4ade80">${fmt(com3D)}</div><div class="dsub">pendiente de cobro</div></div>
     <div class="dcard"><div class="dname"><span class="ddot" style="background:#4ade80"></span>LN pagó proveedores</div><div class="damt" style="color:#60a5fa">${fmt(nevPag)}</div><div class="dsub">total pagado por LN</div></div>
