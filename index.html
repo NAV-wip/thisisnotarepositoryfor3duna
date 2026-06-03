@@ -395,7 +395,8 @@ function renderFeed(){
 function txRow(t){
   const c=tipoColor(t.tipo);
   const idx=tx.indexOf(t);
-  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d')||(t.tipo==='adelanto'&&t.abono_dir&&t.reembolsado);
+  const isAbonoDir=t.tipo==='adelanto'&&t.abono_dir;
+  const isPos=t.tipo==='venta'||(t.tipo==='prestamo'&&t.dir==='sam-3d')||isAbonoDir;
   const valColor=isPos?'var(--green)':'var(--red)';
   const sign=isPos?'+':'−';
   const tipInfo=TIPOS[t.tipo]||{label:t.tipo};
@@ -412,7 +413,10 @@ function txRow(t){
     <div class="tx-cat">${t.categoria||''}</div>
     <div class="tx-val" style="color:${valColor}">${sign}${fmt(displayVal)}${t.iva?'<span style="font-size:9px;color:var(--t3)"> neto</span>':''}</div>
     <div class="tx-actions">
-      <button class="s-btn ${t.estado==='pendiente'?'s-p':'s-pg'}" onclick="toggleE('${t.id}')">${t.estado==='pendiente'?'pendiente':'pagado'}</button>
+      ${isAbonoDir
+        ? `<button class="s-btn ${t.reembolsado?'s-pg':'s-p'}" onclick="toggleReemb('${t.id}')">${t.reembolsado?'confirmado':'pendiente'}</button>`
+        : `<button class="s-btn ${t.estado==='pendiente'?'s-p':'s-pg'}" onclick="toggleE('${t.id}')">${t.estado==='pendiente'?'pendiente':'pagado'}</button>`
+      }
       <button class="del" onclick="openModal('${t.id}')" title="Editar">✎</button>
       <button class="del" onclick="delTx('${t.id}')" title="Eliminar">×</button>
     </div>
@@ -653,17 +657,36 @@ const TYPE_FORMS = {
       <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
       <div class="fg"><label class="fl">Código / Referencia</label><input class="fi" type="text" id="f-cod" placeholder="Opcional"></div>
     </div>
-    <div class="fg"><label class="fl">¿El pago al proveedor fue realizado?</label>${estadoToggle('pagado','Pendiente','Realizado')}</div>
+    <div class="fg" id="fg-estado-prov">
+      <label class="fl">¿El pago al proveedor fue realizado?</label>
+      ${estadoToggle('pagado','Pendiente','Realizado')}
+    </div>
     <div class="fg" id="fg-reemb" style="margin-top:6px">
-      <label class="fl" id="lbl-reemb">¿Ya fue efectivo / confirmado?</label>
+      <label class="fl" id="lbl-reemb">¿Confirmado?</label>
       <div class="etog">
-        <button class="etog-btn on-p" id="er-no" onclick="setReemb(false)">No</button>
-        <button class="etog-btn" id="er-si" onclick="setReemb(true)">Sí, confirmado</button>
-      </div>
-      <div id="reemb-hint" style="font-size:10px;color:var(--t3);margin-top:4px">
-        Pago-prov: 3DUNA le reembolsó a él · Abono-dir: el abono ya entró a 3DUNA
+        <button class="etog-btn on-p" id="er-no" onclick="setReemb(false)">Pendiente</button>
+        <button class="etog-btn" id="er-si" onclick="setReemb(true)">Confirmado</button>
       </div>
     </div>
+    <script>
+      (function(){
+        function updateAdelantoDir(){
+          var dir=document.getElementById('f-dir');
+          var fgProv=document.getElementById('fg-estado-prov');
+          var lbl=document.getElementById('lbl-reemb');
+          if(!dir||!fgProv)return;
+          if(dir.value==='deuda-dir'){
+            fgProv.style.display='none';
+            lbl.textContent='¿El abono ya entró a 3DUNA?';
+          } else {
+            fgProv.style.display='';
+            lbl.textContent='¿3DUNA ya le reembolsó?';
+          }
+        }
+        var d=document.getElementById('f-dir');
+        if(d){d.addEventListener('change',updateAdelantoDir);updateAdelantoDir();}
+      })();
+    </script>
   `,
   pago_ln: () => `
     <div class="fhint">La Nevera pagó a un proveedor por cuenta de 3DUNA — se descuenta de lo que debe</div>
@@ -826,6 +849,13 @@ async function toggleE(id){
   t.estado=t.estado==='pendiente'?'pagado':'pendiente';
   renderAll();await save();
   toast(t.estado==='pagado'?'Pagado':'↩ Revertido');
+}
+
+async function toggleReemb(id){
+  snap();const t=tx.find(t=>t.id===id);if(!t)return;
+  t.reembolsado=!t.reembolsado;
+  renderAll();await save();
+  toast(t.reembolsado?'✓ Confirmado':'↩ Pendiente');
 }
 
 async function delTx(id){
