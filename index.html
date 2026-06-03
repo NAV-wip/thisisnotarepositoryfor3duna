@@ -453,17 +453,19 @@ function renderBalances(){
   const nicNeto = nicDeuda - nicVentasPag - nicAbonoPag;
 
   // ── La Nevera ──
-  // Debe a 3DUNA: ventas pendientes - pagos a proveedores
-  // Ya pagó: ventas pagadas reducen deuda
   const lnVentasPend  = tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
   const lnVentasPag   = tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pagado');
-  const lnPagosProv   = tx.filter(t=>t.tipo==='pago_ln').reduce((s,t)=>s+t.valor,0);
-  const lnAdelantos   = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='la nevera'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
   const lnPendVal     = lnVentasPend.reduce((s,t)=>s+neto(t),0);
   const lnPagVal      = lnVentasPag.reduce((s,t)=>s+neto(t),0);
   const lnIVA         = [...lnVentasPend,...lnVentasPag].reduce((s,t)=>s+(t.iva||0),0);
-  // neto: positivo = LN le debe a 3DUNA
-  const lnNeto = lnPendVal - lnPagosProv - lnAdelantos;
+  // Pagos de LN a proveedores (pago_ln type) — restan de lo que LN debe
+  const lnPagosProv   = tx.filter(t=>t.tipo==='pago_ln').reduce((s,t)=>s+t.valor,0);
+  // Adelantos LN tipo pago-prov sin reembolsar — LN pagó por 3DUNA, restan deuda LN
+  const lnPagoProvAd  = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='la nevera'&&!t.abono_dir&&t.dir!=='deuda-dir'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  // Abonos directos LN CONFIRMADOS (reembolsado=true) — restan deuda LN con 3DUNA
+  const lnAbonoPag    = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='la nevera'&&(t.dir==='deuda-dir'||t.abono_dir===true)&&t.reembolsado===true).reduce((s,t)=>s+t.valor,0);
+  // neto: positivo = LN le debe a 3DUNA; negativo = 3DUNA le debe a LN
+  const lnNeto = lnPendVal - lnPagosProv - lnPagoProvAd - lnAbonoPag;
 
   // ── Samuel ──
   // Préstamos pendientes: 3DUNA→Sam (sam debe) vs Sam→3DUNA (3DUNA debe)
@@ -512,7 +514,8 @@ function renderBalances(){
       [
         ['Ventas pendientes (neto)',fmt(lnPendVal),'var(--purple)'],
         ['Ventas ya pagadas',fmt(lnPagVal),'var(--green)'],
-        ['LN pagó a proveedores',fmt(lnPagosProv+lnAdelantos),'#f97316'],
+        ['LN pagó proveedores',fmt(lnPagosProv+lnPagoProvAd),'#f97316'],
+        ['Abonos LN confirmados',fmt(lnAbonoPag),'var(--green)'],
         ['IVA retenido LN',fmt(lnIVA),'var(--t3)'],
         ['Neto por cobrar',fmt(lnNeto),lnNeto>=0?'var(--green)':'var(--red)'],
       ], lnItems)+
