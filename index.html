@@ -434,72 +434,106 @@ function balCard(name,color,num,desc,rows,detail){
 }
 
 function renderBalances(){
-  // ── Nicolas ──
-  const nicAll=tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas');
-  // 3DUNA debe a Nicolas: adelantos pago-prov NO reembolsados
-  const nicDeuda=nicAll.filter(t=>t.dir!=='deuda-dir'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
-  // Abonos directos CONFIRMADOS reducen la deuda
-  const nicAbono=nicAll.filter(t=>t.dir==='deuda-dir'&&t.reembolsado===true).reduce((s,t)=>s+t.valor,0);
-  // Ventas vía Nicolás YA PAGADAS — Nicolas cobró y debe pasarle a 3DUNA, reduce deuda
-  const nicVentasPag=tx.filter(t=>t.tipo==='venta'&&t.quien==='nicolas'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
-  const nicDebt=nicDeuda-nicAbono-nicVentasPag;
-  const nicReemb=nicAll.filter(t=>t.dir!=='deuda-dir'&&t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  // Helpers: total pagado / pendiente por entidad
+  const sum = (arr, field) => arr.reduce((s,t)=>s+(field?t[field]:t.valor),0);
+  const byQ = (tipo, quien, estado) => tx.filter(t=>t.tipo===tipo && (!quien||t.quien===quien) && (!estado||t.estado===estado));
+
+  // ── Nicolás ──
+  // Debe a 3DUNA: ventas cobradas vía él (ya pagadas) + abonos directos pagados
+  // 3DUNA le debe: adelantos pago-prov aún no reembolsados
+  const nicAdelantos  = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.dir!=='deuda-dir');
+  const nicDeuda      = nicAdelantos.filter(t=>!t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  const nicReemb      = nicAdelantos.filter(t=>t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  const nicVentasPag  = tx.filter(t=>t.tipo==='venta'&&t.quien==='nicolas'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
+  const nicVentasPend = tx.filter(t=>t.tipo==='venta'&&t.quien==='nicolas'&&t.estado==='pendiente').reduce((s,t)=>s+neto(t),0);
+  const nicAbonoPag   = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='nicolas'&&t.dir==='deuda-dir'&&t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  // neto: positivo = 3DUNA le debe a Nicolas; negativo = Nicolas le debe a 3DUNA
+  const nicNeto = nicDeuda - nicVentasPag - nicAbonoPag;
 
   // ── La Nevera ──
-  const lnCobrar =tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
-  const lnCobrado=tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pagado');
-  const lnDebt  =lnCobrar.reduce((s,t)=>s+neto(t),0);
-  const lnPaidA =lnCobrado.reduce((s,t)=>s+neto(t),0);
-  const lnPagoProv=tx.filter(t=>t.tipo==='pago_ln').reduce((s,t)=>s+t.valor,0);
-  const lnNeto  =lnDebt-lnPagoProv;
-  const lnIVA   =[...lnCobrar,...lnCobrado].reduce((s,t)=>s+(t.iva||0),0);
+  // Debe a 3DUNA: ventas pendientes - pagos a proveedores
+  // Ya pagó: ventas pagadas reducen deuda
+  const lnVentasPend  = tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pendiente');
+  const lnVentasPag   = tx.filter(t=>t.tipo==='venta'&&t.quien==='la nevera'&&t.estado==='pagado');
+  const lnPagosProv   = tx.filter(t=>t.tipo==='pago_ln').reduce((s,t)=>s+t.valor,0);
+  const lnAdelantos   = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='la nevera'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  const lnPendVal     = lnVentasPend.reduce((s,t)=>s+neto(t),0);
+  const lnPagVal      = lnVentasPag.reduce((s,t)=>s+neto(t),0);
+  const lnIVA         = [...lnVentasPend,...lnVentasPag].reduce((s,t)=>s+(t.iva||0),0);
+  // neto: positivo = LN le debe a 3DUNA
+  const lnNeto = lnPendVal - lnPagosProv - lnAdelantos;
 
   // ── Samuel ──
-  const samAll  =tx.filter(t=>t.tipo==='prestamo');
-  const samPend =samAll.filter(t=>t.estado==='pendiente');
-  const sam3d   =samPend.filter(t=>t.dir==='3d-sam').reduce((s,t)=>s+t.valor,0);
-  const sam3dR  =samPend.filter(t=>t.dir==='sam-3d').reduce((s,t)=>s+t.valor,0);
-  const samNeto =sam3d-sam3dR; // positivo = Samuel le debe a 3DUNA
+  // Préstamos pendientes: 3DUNA→Sam (sam debe) vs Sam→3DUNA (3DUNA debe)
+  const samPend = tx.filter(t=>t.tipo==='prestamo'&&t.estado==='pendiente');
+  const samPagados = tx.filter(t=>t.tipo==='prestamo'&&t.estado==='pagado');
+  const sam3d  = samPend.filter(t=>t.dir==='3d-sam').reduce((s,t)=>s+t.valor,0);
+  const sam3dR = samPend.filter(t=>t.dir==='sam-3d').reduce((s,t)=>s+t.valor,0);
+  // Ventas vía Samuel pagadas reducen lo que le debemos
+  const samVentasPag = tx.filter(t=>t.tipo==='venta'&&t.quien==='samuel'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
+  // Adelantos de Samuel pagados
+  const samAdelantosPag = tx.filter(t=>t.tipo==='adelanto'&&t.quien==='samuel'&&!t.reembolsado).reduce((s,t)=>s+t.valor,0);
+  // neto: positivo = Samuel le debe a 3DUNA
+  const samNeto = sam3d - sam3dR - samVentasPag - samAdelantosPag;
 
   // ── Comisiones ──
-  const comLN=tx.filter(t=>t.tipo==='comision'&&t.dir==='ln-3d'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-  const com3D=tx.filter(t=>t.tipo==='comision'&&t.dir==='3d-ln'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const comLN = tx.filter(t=>t.tipo==='comision'&&t.dir==='ln-3d'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const com3D = tx.filter(t=>t.tipo==='comision'&&t.dir==='3d-ln'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const comPag= tx.filter(t=>t.tipo==='comision'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
 
   // ── Saldo cuenta ──
-  const inP =tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
-  const outP=tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado'&&t.dir!=='deuda-dir').reduce((s,t)=>s+t.valor,0);
-  const saldo=SALDO0+inP-outP;
+  const inP  = tx.filter(t=>t.tipo==='venta'&&t.estado==='pagado').reduce((s,t)=>s+neto(t),0);
+  const outP = tx.filter(t=>['gasto','adelanto'].includes(t.tipo)&&t.estado==='pagado'&&t.dir!=='deuda-dir').reduce((s,t)=>s+t.valor,0);
+  const saldo= SALDO0+inP-outP;
 
-  const nicItems=nicAll.filter(t=>t.dir!=='deuda-dir'&&!t.reembolsado).slice(0,4)
+  // ── Items detail ──
+  const nicItems = nicAdelantos.filter(t=>!t.reembolsado).slice(0,4)
     .map(t=>'<div class="bal-item"><span class="bal-item-con">'+t.concepto+'</span><span class="bal-item-val" style="color:var(--amber)">'+fmt(t.valor)+'</span></div>').join('');
 
-  const lnItems=lnCobrar.slice(0,3)
+  const lnItems = lnVentasPend.slice(0,3)
     .map(t=>'<div class="bal-item"><span class="bal-item-con">'+t.concepto+'</span><span class="bal-item-val" style="color:var(--purple)">'+fmt(neto(t))+'</span></div>').join('');
 
   $('bal-grid').innerHTML=
-    balCard('Nicolás','#fbbf24',Math.abs(nicDebt),
-      nicDebt>0?'3DUNA le debe a Nicolás':nicDebt<0?'Nicolás le debe a 3DUNA':'Al día',
+    balCard('Nicolás','#fbbf24',Math.abs(nicNeto),
+      nicNeto>0?'3DUNA le debe a Nicolás':nicNeto<0?'Nicolás le debe a 3DUNA':'Al día',
       [
-        ['Adelantos pendientes reembolso',fmt(nicDeuda),'var(--amber)'],
-        ['Ventas cobradas vía Nicolás',fmt(nicVentasPag),'var(--green)'],
-        ['Abonos directos confirmados',fmt(nicAbono),'var(--green)'],
-        ['Neto',fmt(Math.abs(nicDebt)),nicDebt>0?'var(--amber)':'var(--green)'],
-      ],
-      nicItems)+
+        ['Adelantos sin reembolso',fmt(nicDeuda),'var(--amber)'],
+        ['Ventas cobradas por él',fmt(nicVentasPag),'var(--green)'],
+        ['Ventas pendientes de cobrar',fmt(nicVentasPend),'var(--t3)'],
+        ['Abonos directos',fmt(nicAbonoPag),'var(--green)'],
+        ['Neto',fmt(Math.abs(nicNeto)),nicNeto>0?'var(--amber)':'var(--green)'],
+      ], nicItems)+
     balCard('La Nevera','#a78bfa',Math.abs(lnNeto),
       lnNeto>0?'La Nevera le debe a 3DUNA':lnNeto<0?'3DUNA le debe a La Nevera':'En equilibrio',
-      [['Ventas pendientes',fmt(lnDebt),'var(--purple)'],['Neto por cobrar',fmt(lnNeto),lnNeto>=0?'var(--green)':'var(--red)'],['IVA retenido LN',fmt(lnIVA),'var(--t3)'],['Ya cobrado',fmt(lnPaidA),'var(--green)']],
-      lnItems)+
+      [
+        ['Ventas pendientes (neto)',fmt(lnPendVal),'var(--purple)'],
+        ['Ventas ya pagadas',fmt(lnPagVal),'var(--green)'],
+        ['LN pagó a proveedores',fmt(lnPagosProv+lnAdelantos),'#f97316'],
+        ['IVA retenido LN',fmt(lnIVA),'var(--t3)'],
+        ['Neto por cobrar',fmt(lnNeto),lnNeto>=0?'var(--green)':'var(--red)'],
+      ], lnItems)+
     balCard('Samuel','#2dd4bf',Math.abs(samNeto),
       samNeto>0?'Samuel le debe a 3DUNA':samNeto<0?'3DUNA le debe a Samuel':'En equilibrio',
-      [['3DUNA prestó (pend.)',fmt(sam3d),'var(--red)'],['Samuel debe devolver',fmt(sam3dR),'var(--green)']],'')+
+      [
+        ['3DUNA prestó (pendiente)',fmt(sam3d),'var(--red)'],
+        ['Samuel devolvió (pendiente)',fmt(sam3dR),'var(--green)'],
+        ['Adelantos sin reembolso',fmt(samAdelantosPag),'var(--amber)'],
+        ['Neto',fmt(Math.abs(samNeto)),samNeto>0?'var(--green)':'var(--red)'],
+      ],'')+
     balCard('Comisiones','#60a5fa',comLN+com3D,
       'Comisiones pendientes',
-      [['LN debe a 3DUNA',fmt(comLN),'var(--green)'],['3DUNA debe a LN',fmt(com3D),'var(--red)']],'')+
+      [
+        ['LN debe a 3DUNA',fmt(comLN),'var(--green)'],
+        ['3DUNA debe a LN',fmt(com3D),'var(--red)'],
+        ['Ya pagadas',fmt(comPag),'var(--t3)'],
+      ],'')+
     balCard('Saldo cuenta','#4ade80',saldo,
-      'Pagos realizados neto',
-      [['Saldo inicial',fmt(SALDO0),'var(--t3)'],['Ingresos cobrados',fmt(inP),'var(--green)'],['Egresos pagados',fmt(outP),'var(--red)']],
-      '');
+      saldo>=0?'Disponible en cuenta':'Déficit en cuenta',
+      [
+        ['Saldo inicial',fmt(SALDO0),'var(--t3)'],
+        ['Ventas cobradas',fmt(inP),'var(--green)'],
+        ['Gastos pagados',fmt(outP),'var(--red)'],
+      ],'');
 }
 
 // ── RESUMEN ──
