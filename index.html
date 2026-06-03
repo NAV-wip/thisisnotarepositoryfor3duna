@@ -3,646 +3,670 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3DUNA — Contabilidad</title>
+<title>3DUNA</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0e0e0e;--surface:#161616;--surface2:#1f1f1f;--border:#2a2a2a;--border2:#333;
-  --text:#e8e6e0;--muted:#888;--dim:#555;
-  --green:#4ade80;--red:#f87171;--amber:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;
+  --bg:#0c0c0c;--s1:#131313;--s2:#1a1a1a;--s3:#222;
+  --b1:#252525;--b2:#2e2e2e;--b3:#3a3a3a;
+  --t1:#eeece6;--t2:#999;--t3:#555;
+  --green:#4ade80;--red:#f87171;--amber:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--teal:#2dd4bf;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:8px;--r2:12px;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh}
-.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
-.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
-.logo{padding:22px 18px 14px;border-bottom:1px solid var(--border)}
-.logo-mark{font-family:var(--mono);font-size:17px;font-weight:500;letter-spacing:2px}
-.logo-sub{font-size:10px;color:var(--muted);margin-top:2px}
-nav{padding:10px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;color:var(--muted);font-size:13px;border-left:2px solid transparent;transition:all 0.15s}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
-.nav-item.active{color:var(--text);border-left-color:var(--text);background:rgba(255,255,255,0.04)}
-.nav-ico{font-size:14px;width:16px;text-align:center}
-.sidebar-foot{padding:14px 16px;border-top:1px solid var(--border)}
-.bal-pill{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;margin-bottom:10px}
-.bal-label{font-size:10px;color:var(--muted);margin-bottom:2px}
-.bal-val{font-family:var(--mono);font-size:14px;color:var(--green)}
-.sync-row{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* ── LAYOUT ── */
+.shell{display:grid;grid-template-columns:52px 1fr;min-height:100vh}
+.rail{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;position:sticky;top:0;height:100vh}
+.rail-logo{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:1.5px;color:var(--t2);writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--b1);width:100%;text-align:center}
+.rail-btn{width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);font-size:16px;transition:all 0.15s;border:none;background:none;position:relative}
+.rail-btn:hover{color:var(--t1);background:var(--s2)}
+.rail-btn.active{color:var(--t1);background:var(--s3)}
+.rail-btn .tip{position:absolute;left:44px;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:50}
+.rail-btn:hover .tip{opacity:1}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--t3)}
 .sync-dot.ok{background:var(--green)}
 .sync-dot.busy{background:var(--amber);animation:pulse 1s infinite}
 .sync-dot.err{background:var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.main{overflow-y:auto;display:flex;flex-direction:column}
-.topbar{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
-.page-title{font-size:16px;font-weight:500}
-.actions{display:flex;gap:8px}
-.btn{padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--font);transition:all 0.15s;display:inline-flex;align-items:center;gap:5px}
-.btn:hover{background:var(--border)}
-.btn:disabled{opacity:0.5;cursor:not-allowed}
-.btn-primary{background:var(--text);color:#0e0e0e;border-color:var(--text)}
-.btn-primary:hover{background:#ccc}
-.content{padding:20px 24px;flex:1}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
-.metric{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:13px}
-.mlabel{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
-.mval{font-family:var(--mono);font-size:18px;font-weight:500}
-.msub{font-size:10px;color:var(--muted);margin-top:3px}
-.mg .mval{color:var(--green)}
-.mr .mval{color:var(--red)}
-.mb .mval{color:var(--blue)}
-.ma .mval{color:var(--amber)}
-.charts-row{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:18px}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px}
-.ctitle{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
-.table-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden}
-.toolbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)}
-.srch{flex:1;max-width:220px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:6px 10px;color:var(--text);font-family:var(--font);font-size:12px}
-.srch::placeholder{color:var(--dim)}
-.fsel{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font);font-size:11px;cursor:pointer}
-.fsel option{background:var(--surface)}
-.cnt{font-size:10px;color:var(--muted);margin-left:auto}
-table{width:100%;border-collapse:collapse}
-thead th{padding:9px 11px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--dim);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
-tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.1s}
-tbody tr:hover{background:rgba(255,255,255,0.03)}
-tbody tr:last-child{border-bottom:none}
-td{padding:9px 11px;font-size:12px;vertical-align:middle}
-.mono{font-family:var(--mono);font-size:11px}
-.muted{color:var(--muted)}
-.trunc{max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:500;letter-spacing:0.2px}
-.bi{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
-.be{background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.2)}
-.bp{background:rgba(251,191,36,0.1);color:#fbbf24}
-.bpg{background:rgba(74,222,128,0.08);color:#4ade80}
-.dot{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:4px}
-.act-btn{background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted);padding:2px 7px;font-size:10px;cursor:pointer;font-family:var(--font);transition:all 0.15s}
-.act-btn:hover{background:rgba(74,222,128,0.1);color:var(--green);border-color:rgba(74,222,128,0.3)}
-.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px}
-.tab{padding:9px 14px;cursor:pointer;font-size:12px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--text);border-bottom-color:var(--text)}
-.pitem{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 13px;display:flex;align-items:center;gap:10px;margin-bottom:7px;transition:border-color 0.15s}
-.pitem:hover{border-color:var(--border2)}
-.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.pmid{flex:1;min-width:0}
-.pcon{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pwho{font-size:10px;color:var(--muted)}
-.pright{text-align:right;flex-shrink:0}
-.pval{font-family:var(--mono);font-size:12px;font-weight:500}
-.pdate{font-size:10px;color:var(--muted)}
-.mark-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--muted);cursor:pointer;font-family:var(--font);transition:all 0.15s;white-space:nowrap;flex-shrink:0}
-.mark-btn:hover{background:rgba(74,222,128,0.1);color:var(--green);border-color:rgba(74,222,128,0.3)}
-.deuda-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
-.dcard{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:13px}
-.dname{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
-.ddot{width:5px;height:5px;border-radius:50%}
-.damt{font-family:var(--mono);font-size:17px;font-weight:500;margin-bottom:2px}
-.dsub{font-size:10px;color:var(--muted)}
-.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;align-items:center;justify-content:center}
-.modal-ov.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto}
-.mhead{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.mtitle{font-size:14px;font-weight:500}
-.mclose{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0 6px;border-radius:4px}
-.mclose:hover{color:var(--text)}
-.mbody{padding:16px 20px}
-.mfoot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-.tipo-toggle{display:flex;border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:12px}
-.tbtn{flex:1;padding:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:var(--surface2);color:var(--muted);border:none;font-family:var(--font);transition:all 0.15s}
-.tbtn.on-i{background:rgba(74,222,128,0.15);color:#4ade80}
-.tbtn.on-e{background:rgba(248,113,113,0.15);color:#f87171}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.main{display:flex;flex-direction:column;overflow:hidden;height:100vh}
+.topbar{padding:0 20px;height:52px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.page-title{font-size:14px;font-weight:500;color:var(--t2)}
+.spacer{flex:1}
+.btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--t1);font-family:var(--font);transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:hover{background:var(--b1)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-accent{background:var(--t1);color:#0c0c0c;border-color:var(--t1)}
+.btn-accent:hover{background:#d0cec8}
+.btn-green{background:rgba(74,222,128,.12);color:var(--green);border-color:rgba(74,222,128,.25)}
+.btn-green:hover{background:rgba(74,222,128,.2)}
+.content{flex:1;overflow-y:auto;padding:20px}
+
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── FEED ── */
+.feed-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--b2);background:none;color:var(--t2);font-family:var(--font);transition:all .15s}
+.pill:hover{color:var(--t1);border-color:var(--b3)}
+.pill.on{background:var(--s2);color:var(--t1);border-color:var(--b3)}
+.srch{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:6px 10px;color:var(--t1);font-family:var(--font);font-size:12px;width:200px}
+.srch::placeholder{color:var(--t3)}
+.srch:focus{outline:none;border-color:var(--b3)}
+
+.tx-group{margin-bottom:20px}
+.tx-group-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin-bottom:8px;font-weight:500}
+.tx-row{display:grid;grid-template-columns:16px 1fr auto auto 90px 80px;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r);border:1px solid transparent;transition:all .15s;cursor:default}
+.tx-row:hover{background:var(--s1);border-color:var(--b1)}
+.tx-indicator{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.tx-main{}
+.tx-concepto{font-size:13px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.tx-meta{font-size:11px;color:var(--t3);margin-top:1px}
+.tx-entidad{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;background:var(--s2);color:var(--t2);flex-shrink:0}
+.tx-cat{font-size:10px;color:var(--t3);flex-shrink:0;text-align:right;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-valor{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;flex-shrink:0}
+.tx-estado{display:flex;justify-content:flex-end;flex-shrink:0}
+.estado-btn{padding:3px 9px;border-radius:4px;font-size:10px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.estado-btn.pendiente{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+.estado-btn.pendiente:hover{background:rgba(251,191,36,.2)}
+.estado-btn.pagado{background:rgba(74,222,128,.08);color:var(--green);border:1px solid rgba(74,222,128,.15)}
+.estado-btn.pagado:hover{background:rgba(74,222,128,.15)}
+.del-btn{opacity:0;background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px;transition:all .15s}
+.tx-row:hover .del-btn{opacity:1}
+.del-btn:hover{color:var(--red);background:rgba(248,113,113,.1)}
+
+/* ── BALANCES ── */
+.bal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:24px}
+.bal-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px}
+.bal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.bal-name{font-size:13px;font-weight:500}
+.bal-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500}
+.bal-number{font-family:var(--mono);font-size:26px;font-weight:500;margin-bottom:4px}
+.bal-sub{font-size:11px;color:var(--t3);margin-bottom:14px}
+.bal-rows{}
+.bal-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--b1);font-size:11px}
+.bal-row-label{color:var(--t3)}
+.bal-row-val{font-family:var(--mono);font-size:11px}
+
+/* ── RESUMEN ── */
+.summary-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.smet{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px}
+.smet-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.smet-val{font-family:var(--mono);font-size:20px;font-weight:500}
+.smet-sub{font-size:10px;color:var(--t3);margin-top:3px}
+.charts-grid{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:20px}
+.chart-box{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:16px}
+.chart-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:12px}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r2);width:460px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:14px;font-weight:500}
+.modal-x{background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px;border-radius:4px}
+.modal-x:hover{color:var(--t1)}
+.modal-body{padding:18px 20px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--b1);display:flex;gap:8px;justify-content:flex-end}
+
+/* tipo toggle */
+.ttog{display:flex;border:1px solid var(--b2);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.ttog-btn{flex:1;padding:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:var(--s2);color:var(--t3);border:none;font-family:var(--font);transition:all .15s}
+.ttog-btn.on-i{background:rgba(74,222,128,.15);color:var(--green)}
+.ttog-btn.on-e{background:rgba(248,113,113,.15);color:var(--red)}
+
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fgrp{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.flabel{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted)}
-.finput,.fsel2{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:8px 10px;color:var(--text);font-family:var(--font);font-size:12px;width:100%}
-.finput:focus,.fsel2:focus{outline:none;border-color:var(--dim)}
-.fsel2 option{background:var(--surface)}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:10px 16px;font-size:12px;z-index:200;opacity:0;transform:translateY(6px);transition:all 0.3s;pointer-events:none}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.fl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3)}
+.fi,.fs{background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:8px 10px;color:var(--t1);font-family:var(--font);font-size:12px;width:100%;transition:border-color .15s}
+.fi:focus,.fs:focus{outline:none;border-color:var(--b3)}
+.fs option{background:var(--s1)}
+
+/* estado toggle */
+.etog{display:flex;border:1px solid var(--b2);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.etog-btn{flex:1;padding:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:var(--s2);color:var(--t3);border:none;font-family:var(--font);transition:all .15s}
+.etog-btn.on-p{background:rgba(251,191,36,.12);color:var(--amber)}
+.etog-btn.on-pg{background:rgba(74,222,128,.12);color:var(--green)}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:10px 16px;font-size:12px;z-index:200;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none;max-width:280px}
 .toast.show{opacity:1;transform:translateY(0)}
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:14px;color:var(--muted);font-size:13px}
-.spinner{width:26px;height:26px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin 0.7s linear infinite}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:14px;color:var(--t3);font-size:13px;position:fixed;inset:0;background:var(--bg);z-index:300}
+.spinner{width:24px;height:24px;border:2px solid var(--b2);border-top-color:var(--t1);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:32px;color:var(--muted);font-size:12px}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.empty{text-align:center;padding:48px;color:var(--t3);font-size:13px}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 </style>
 </head>
 <body>
 
-<div id="loading" class="loading">
+<div class="loading" id="loading">
   <div class="spinner"></div>
-  <span id="loading-msg">Cargando datos...</span>
+  <span id="load-msg">Conectando...</span>
 </div>
 
-<div id="app" class="app" style="display:none">
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-mark">3DUNA</div>
-      <div class="logo-sub">contabilidad · compartida</div>
-    </div>
-    <nav>
-      <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-ico">▪</span>Dashboard</div>
-      <div class="nav-item" onclick="showPage('movimientos',this)"><span class="nav-ico">≡</span>Movimientos</div>
-      <div class="nav-item" onclick="showPage('pendientes',this)">
-        <span class="nav-ico">◷</span>Pendientes
-        <span id="pend-n" style="margin-left:auto;background:rgba(251,191,36,0.15);color:#fbbf24;border-radius:8px;padding:1px 6px;font-size:9px;font-weight:600"></span>
-      </div>
-      <div class="nav-item" onclick="showPage('deudas',this)"><span class="nav-ico">⇅</span>Deudas</div>
-    </nav>
-    <div class="sidebar-foot">
-      <div class="bal-pill">
-        <div class="bal-label">Saldo cuenta</div>
-        <div class="bal-val" id="sb-bal">—</div>
-      </div>
-      <div class="sync-row">
-        <span class="sync-dot" id="sdot"></span>
-        <span id="stxt">Conectando...</span>
-        <button class="btn" style="margin-left:auto;padding:3px 8px;font-size:10px" onclick="syncNow()" id="sync-btn">↻</button>
-      </div>
+<div class="shell" id="shell" style="display:none">
+  <!-- Rail -->
+  <aside class="rail">
+    <div class="rail-logo">3DUNA</div>
+    <button class="rail-btn active" id="rb-feed" onclick="gotoPage('feed',this)" title="Feed">
+      ≡<span class="tip">Feed</span>
+    </button>
+    <button class="rail-btn" id="rb-balances" onclick="gotoPage('balances',this)" title="Balances">
+      ⇅<span class="tip">Balances</span>
+    </button>
+    <button class="rail-btn" id="rb-resumen" onclick="gotoPage('resumen',this)" title="Resumen">
+      ◎<span class="tip">Resumen</span>
+    </button>
+    <div class="rail-foot">
+      <button class="rail-btn" onclick="syncNow()" title="Sync"><span style="font-size:13px">↻</span><span class="tip">Sincronizar</span></button>
+      <button class="rail-btn" onclick="undoAction()" id="undo-rb" title="Deshacer"><span style="font-size:12px">↩</span><span class="tip">Deshacer</span></button>
+      <div class="sync-dot" id="sdot" title=""></div>
     </div>
   </aside>
 
+  <!-- Main -->
   <main class="main">
-    <!-- DASHBOARD -->
-    <div id="page-dashboard">
-      <div class="topbar">
-        <div class="page-title">Dashboard</div>
-        <div class="actions">
-          <button class="btn" id="undo-btn" onclick="undo()" style="opacity:0.35" disabled title="Deshacer (Ctrl+Z)">↩ Deshacer</button>
-          <button class="btn" id="redo-btn" onclick="redo()" style="opacity:0.35" disabled title="Rehacer (Ctrl+Y)">↪ Rehacer</button>
-          <button class="btn btn-primary" onclick="openModal()">+ Nuevo movimiento</button>
-        </div>
-      </div>
-      <div class="content">
-        <div class="metrics" id="metrics"></div>
-        <div class="charts-row">
-          <div class="chart-card">
-            <div class="ctitle">Flujo mensual</div>
-            <div style="position:relative;height:190px"><canvas id="ch-mes" role="img" aria-label="Flujo mensual"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="ctitle">Por categoría</div>
-            <div style="position:relative;height:190px"><canvas id="ch-cat" role="img" aria-label="Categorías"></canvas></div>
-          </div>
-        </div>
-        <div class="ctitle" style="margin-bottom:9px">Últimos movimientos</div>
-        <div class="table-card">
-          <table><thead><tr><th>Tipo</th><th>Concepto</th><th>Categoría</th><th>Quién debe</th><th>Fecha</th><th style="text-align:right">Valor</th><th>Estado</th></tr></thead>
-          <tbody id="recent-tb"></tbody></table>
-        </div>
-      </div>
+    <div class="topbar">
+      <span class="page-title" id="page-title">Feed</span>
+      <div class="spacer"></div>
+      <span id="sync-txt" style="font-size:10px;color:var(--t3)"></span>
+      <button class="btn btn-accent" onclick="openModal()">+ Nuevo</button>
     </div>
 
-    <!-- MOVIMIENTOS -->
-    <div id="page-movimientos" style="display:none">
-      <div class="topbar">
-        <div class="page-title">Movimientos</div>
-        <div class="actions"><button class="btn btn-primary" onclick="openModal()">+ Nuevo</button></div>
+    <!-- FEED -->
+    <div class="content page active" id="page-feed">
+      <div class="feed-filters">
+        <input class="srch" type="text" placeholder="Buscar..." id="srch" oninput="renderFeed()">
+        <button class="pill on" data-f="tipo" data-v="" onclick="togglePill(this)">Todos</button>
+        <button class="pill" data-f="tipo" data-v="ingreso" onclick="togglePill(this)">↑ Ingresos</button>
+        <button class="pill" data-f="tipo" data-v="egreso" onclick="togglePill(this)">↓ Egresos</button>
+        <button class="pill on" data-f="estado" data-v="" onclick="togglePill(this)">Todos</button>
+        <button class="pill" data-f="estado" data-v="pendiente" onclick="togglePill(this)">Pendiente</button>
+        <button class="pill" data-f="estado" data-v="pagado" onclick="togglePill(this)">Pagado</button>
+        <select class="srch" style="width:auto" id="f-ent" onchange="renderFeed()">
+          <option value="">Todas las entidades</option>
+          <option>nicolas</option><option>la nevera</option><option>samuel</option><option>cliente</option><option>proveedor</option>
+        </select>
       </div>
-      <div class="content">
-        <div class="table-card">
-          <div class="toolbar">
-            <input class="srch" type="text" placeholder="Buscar..." id="srch" oninput="renderTable()">
-            <select class="fsel" id="f-tipo" onchange="renderTable()"><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select>
-            <select class="fsel" id="f-est" onchange="renderTable()"><option value="">Estado</option><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
-            <select class="fsel" id="f-cat" onchange="renderTable()"><option value="">Categoría</option></select>
-            <select class="fsel" id="f-mes" onchange="renderTable()"><option value="">Mes</option></select>
-            <span class="cnt" id="tbl-cnt"></span>
-          </div>
-          <table><thead><tr><th>Tipo</th><th>Concepto</th><th>Categoría</th><th>Quién debe</th><th>Medio</th><th>Fecha</th><th style="text-align:right">Valor</th><th>IVA</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="main-tb"></tbody></table>
-        </div>
-      </div>
+      <div id="feed-content"></div>
     </div>
 
-    <!-- PENDIENTES -->
-    <div id="page-pendientes" style="display:none">
-      <div class="topbar">
-        <div class="page-title">Pendientes</div>
-        <button class="btn btn-primary" onclick="openModal()">+ Nuevo</button>
-      </div>
-      <div class="content">
-        <div class="metrics" style="grid-template-columns:1fr 1fr;max-width:340px;margin-bottom:14px" id="pmet"></div>
-        <div class="tabs">
-          <div class="tab active" onclick="setPTab('cobrar',this)">Por cobrar</div>
-          <div class="tab" onclick="setPTab('pagar',this)">Por pagar</div>
-        </div>
-        <div id="plist"></div>
-      </div>
+    <!-- BALANCES -->
+    <div class="content page" id="page-balances">
+      <div class="bal-grid" id="bal-grid"></div>
     </div>
 
-    <!-- DEUDAS -->
-    <div id="page-deudas" style="display:none">
-      <div class="topbar"><div class="page-title">Deudas y saldos</div></div>
-      <div class="content">
-        <div class="deuda-grid" id="dg"></div>
-        <div class="ctitle" style="margin-bottom:9px">Balance histórico</div>
-        <div class="chart-card">
-          <div style="position:relative;height:170px"><canvas id="ch-bal" role="img" aria-label="Balance histórico"></canvas></div>
+    <!-- RESUMEN -->
+    <div class="content page" id="page-resumen">
+      <div class="summary-metrics" id="sum-metrics"></div>
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-label">Flujo mensual</div>
+          <div style="position:relative;height:200px"><canvas id="ch-mes" role="img" aria-label="Flujo mensual"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Por categoría</div>
+          <div style="position:relative;height:200px"><canvas id="ch-cat" role="img" aria-label="Por categoría"></canvas></div>
         </div>
       </div>
-    </div>
-
-    <!-- MODAL -->
-    <div class="modal-ov" id="modal" onclick="if(event.target===this)closeModal()">
-      <div class="modal">
-        <div class="mhead"><div class="mtitle">Nuevo movimiento</div><button class="mclose" onclick="closeModal()">×</button></div>
-        <div class="mbody">
-          <div class="tipo-toggle">
-            <button class="tbtn on-i" id="btn-i" onclick="setTipo('ingreso')">↑ Ingreso</button>
-            <button class="tbtn" id="btn-e" onclick="setTipo('egreso')">↓ Egreso</button>
-          </div>
-          <div class="frow">
-            <div class="fgrp"><label class="flabel">Categoría</label>
-              <select class="fsel2" id="n-cat"><option>cotizacion</option><option>reabastecimiento</option><option>inversion drones</option><option>inversion</option><option>mantenimiento</option><option>nomina empleados</option><option>prestamo</option><option>cliente referido LN</option><option>referido 3DUNA</option></select></div>
-            <div class="fgrp"><label class="flabel">Estado</label>
-              <select class="fsel2" id="n-est"><option value="pendiente">Pendiente</option><option value="pagado">Pagado</option></select></div>
-          </div>
-          <div class="fgrp"><label class="flabel">Concepto</label><input class="finput" type="text" id="n-con" placeholder="Descripción del movimiento"></div>
-          <div class="frow">
-            <div class="fgrp"><label class="flabel">Valor (COP)</label><input class="finput" type="number" id="n-val" placeholder="0"></div>
-            <div class="fgrp"><label class="flabel">IVA (COP)</label><input class="finput" type="number" id="n-iva" placeholder="0"></div>
-          </div>
-          <div class="frow">
-            <div class="fgrp"><label class="flabel">Quién paga</label>
-              <select class="fsel2" id="n-qp"><option>nicolas</option><option>samuel</option><option>la nevera</option><option>cliente</option><option>3duna</option></select></div>
-            <div class="fgrp"><label class="flabel">Quién debe</label>
-              <select class="fsel2" id="n-qd"><option>3duna</option><option>nicolas</option><option>samuel</option><option>la nevera</option><option>cliente</option></select></div>
-          </div>
-          <div class="frow">
-            <div class="fgrp"><label class="flabel">Pago a</label>
-              <select class="fsel2" id="n-pa"><option>proveedor</option><option>3duna</option><option>samuel</option></select></div>
-            <div class="fgrp"><label class="flabel">Medio</label>
-              <select class="fsel2" id="n-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
-          </div>
-          <div class="frow">
-            <div class="fgrp"><label class="flabel">Fecha</label><input class="finput" type="date" id="n-fec"></div>
-            <div class="fgrp"><label class="flabel">Código / Ref</label><input class="finput" type="text" id="n-cod" placeholder="COT-XXXXX"></div>
-          </div>
-        </div>
-        <div class="mfoot">
-          <button class="btn" onclick="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveTransaction()" id="save-btn">Guardar</button>
-        </div>
+      <div class="chart-box">
+        <div class="chart-label">Balance acumulado</div>
+        <div style="position:relative;height:160px"><canvas id="ch-bal" role="img" aria-label="Balance"></canvas></div>
       </div>
     </div>
   </main>
 </div>
 
+<!-- MODAL -->
+<div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Nuevo movimiento</div>
+      <button class="modal-x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="ttog">
+        <button class="ttog-btn on-i" id="ti" onclick="setTipo('ingreso')">↑ Ingreso</button>
+        <button class="ttog-btn" id="te" onclick="setTipo('egreso')">↓ Egreso</button>
+      </div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Categoría</label>
+          <select class="fs" id="n-cat">
+            <option>cotizacion</option><option>reabastecimiento</option><option>inversion drones</option>
+            <option>inversion</option><option>mantenimiento</option><option>nomina empleados</option>
+            <option>prestamo</option><option>cliente referido LN</option><option>referido 3DUNA</option>
+          </select></div>
+        <div class="fg"><label class="fl">Entidad</label>
+          <select class="fs" id="n-ent">
+            <option>nicolas</option><option>la nevera</option><option>samuel</option>
+            <option>cliente</option><option>proveedor</option>
+          </select></div>
+      </div>
+      <div class="fg"><label class="fl">Concepto</label>
+        <input class="fi" type="text" id="n-con" placeholder="Descripción del movimiento"></div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Valor (COP)</label>
+          <input class="fi" type="number" id="n-val" placeholder="0"></div>
+        <div class="fg"><label class="fl">IVA (COP)</label>
+          <input class="fi" type="number" id="n-iva" placeholder="0"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Fecha</label>
+          <input class="fi" type="date" id="n-fec"></div>
+        <div class="fg"><label class="fl">Medio</label>
+          <select class="fs" id="n-med">
+            <option value="TRANSF">Transferencia</option>
+            <option value="EFECTI">Efectivo</option>
+          </select></div>
+      </div>
+      <div class="fg"><label class="fl">Estado</label>
+        <div class="etog">
+          <button class="etog-btn on-p" id="ep" onclick="setEstado('pendiente')">Pendiente</button>
+          <button class="etog-btn" id="epg" onclick="setEstado('pagado')">Pagado</button>
+        </div></div>
+      <div class="fg"><label class="fl">Código / Referencia</label>
+        <input class="fi" type="text" id="n-cod" placeholder="COT-XXXXX"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveTx()" id="save-btn">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──
-const BIN_ID = '6a1f7db2da38895dfe7e709c';
-const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const INIT_BAL = 815000;
-const SEED = [{"tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":160000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-01-20","medio":"TRANSF","concepto":"PLA NEGRO POLYMASTER","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"mantenimiento","valor":73450,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"I+D switches y 3ra mano","codigo":"didacticas eletc"},{"tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":30000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-01","medio":"TRANSF","concepto":"repuesto moto","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":80000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-01","medio":"TRANSF","concepto":"piezas dragon","codigo":null},{"tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":158000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-02","medio":"TRANSF","concepto":"filamento PETG blanco","codigo":"POLYMASTERS"},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":1798000,"iva":341620,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-02-05","medio":"TRANSF","concepto":"OZ studio 012605 50%","codigo":"COT-012605"},{"tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":60000,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"2026-02-05","medio":"TRANSF","concepto":"repuesto fibra oasis","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision #2","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":332700,"iva":0,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Taima","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":330000,"iva":0,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Camilax","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":150000,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"2026-02-11","medio":"TRANSF","concepto":"frame nav25","codigo":"JUAN PABLO ZULUAGA"},{"tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":1165866,"iva":0,"quien_paga":"la nevera","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-11","medio":"TRANSF","concepto":"madera TECA","codigo":"FACTURA 123456"},{"tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":89300,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-12","medio":"TRANSF","concepto":"LIJA THINNER","codigo":"PINTURAS SANTA FE"},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-15","medio":"TRANSF","concepto":"zapatos oasis","codigo":null},{"tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":64000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-18","medio":"TRANSF","concepto":"ACEITE DE COCO","codigo":"Cot 012605-1"},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":50000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-20","medio":"TRANSF","concepto":"case fpv","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-02-25","medio":"TRANSF","concepto":"camera hold","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":50000,"iva":0,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-02-25","medio":"TRANSF","concepto":"Impresion parlantes","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":23800,"iva":0,"quien_paga":"3duna","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-26","medio":"TRANSF","concepto":"imanes","codigo":null},{"tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":37800,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-27","medio":"TRANSF","concepto":"masilla","codigo":"Cot 012605-1"},{"tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":52500,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"2026-03-03","medio":"TRANSF","concepto":"bases de pino recompra","codigo":"Cot 022604-2"},{"tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":1721474,"iva":327080,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-03-04","medio":"TRANSF","concepto":"Tablas pizza teca 50% restante","codigo":"Cot 012605-1"},{"tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":55502,"iva":0,"quien_paga":"3duna","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-05","medio":"TRANSF","concepto":"tablones pino madecentro","codigo":"Cot 022602"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":58137,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3mm","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":82911,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"fresas fibra 3 set x10","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":20280,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 125x75 3mm","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":129406,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x400 3mm","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":142574,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Tornilleria","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":179434,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 3mm","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":124300,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3.5mm","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":147540,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 2.5mm","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":59622,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Fresas 2mm x10","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":128302,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placas 200x300 3mm x2","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":90000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"cajas x10","codigo":"DRONES"},{"tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":10000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-02-01","medio":"TRANSF","concepto":"straps x10","codigo":"DRONES"},{"tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":93000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"","medio":"TRANSF","concepto":"llave filtro","codigo":"JULIANA ARANGO"},{"tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":25000,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"","medio":"TRANSF","concepto":"canopy","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"referido 3DUNA","valor":42500,"iva":0,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"","medio":"TRANSF","concepto":"Comision 10% Corte Laser Selva","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"cliente referido LN","valor":340000,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"","medio":"EFECTI","concepto":"WILLIAM gymcats","codigo":null},{"tipo":"egreso","estado":"pendiente","categoria":"prestamo","valor":90000,"iva":0,"quien_paga":"3duna","quien_debe":"samuel","pago_a":"3duna","fecha":"","medio":"EFECTI","concepto":"PRESTAMO SAM","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"prestamo","valor":50000,"iva":0,"quien_paga":"samuel","quien_debe":"samuel","pago_a":"3duna","fecha":"","medio":"TRANSF","concepto":"PAGO SAM","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":52500,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022604-2","codigo":"022604-2"},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":113000,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022602","codigo":"022602-1"},{"tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":147000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"","medio":"TRANSF","concepto":"Polipropileno zuluprints","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"reabastecimiento","valor":30000,"iva":0,"quien_paga":"samuel","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-06","medio":"TRANSF","concepto":"BOLILLOS MADERA DOLLARCITY","codigo":"BOLILLOS MADERA"},{"tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":74700,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"tipo":"egreso","estado":"pagado","categoria":"inversion","valor":407000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-01-13","medio":"TRANSF","concepto":"MADERA ORITO ROBLE","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":84000,"iva":0,"quien_paga":"samuel","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":1000000,"iva":0,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-03-11","medio":"TRANSF","concepto":"PAGO 1M lanevera","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":450000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-04-10","medio":"TRANSF","concepto":"3 frames nav25","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":30000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-04-10","medio":"TRANSF","concepto":"dron accesorio","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":85000,"iva":0,"quien_paga":"cliente","quien_debe":"cliente","pago_a":"3duna","fecha":"2026-04-11","medio":"TRANSF","concepto":"cotizacion varios","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"nomina empleados","valor":800000,"iva":0,"quien_paga":"cliente","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-20","medio":"TRANSF","concepto":"nomina marzo","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"quien_paga":"3duna","quien_debe":"samuel","pago_a":"samuel","fecha":"2026-03-20","medio":"EFECTI","concepto":"retiro efectivo","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"mantenimiento","valor":100000,"iva":0,"quien_paga":"3duna","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-20","medio":"EFECTI","concepto":"pago shopify hp","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"quien_paga":"samuel","quien_debe":"samuel","pago_a":"3duna","fecha":"2026-03-20","medio":"TRANSF","concepto":"pago deuda samuel","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":237000,"iva":0,"quien_paga":"cliente","quien_debe":"la nevera","pago_a":"3duna","fecha":"2026-03-24","medio":"TRANSF","concepto":"Cot 022603 NINA GATO","codigo":null},{"tipo":"egreso","estado":"pendiente","categoria":"inversion","valor":30000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-03-29","medio":"TRANSF","concepto":"Claywoven patreon addon","codigo":null},{"tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":280000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-04-05","medio":"TRANSF","concepto":"Piezas Nissan","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":150000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-04-06","medio":"TRANSF","concepto":"filamento NARANJA","codigo":null},{"tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":400000,"iva":0,"quien_paga":"cliente","quien_debe":"nicolas","pago_a":"3duna","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA pago pendiente","codigo":null},{"tipo":"egreso","estado":"pagado","categoria":"reabastecimiento","valor":225000,"iva":0,"quien_paga":"nicolas","quien_debe":"3duna","pago_a":"proveedor","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA compra","codigo":null}];
+const BIN_ID  = '6a1f7db2da38895dfe7e709c';
+const API_KEY = '$2a$10$KZ/5PuQY3f8ISTkZSbJ5gub./tyjiLmo/zJ64W04yRRGN0KaOyWtW';
+const URL_BIN = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS_R = {'X-Access-Key': API_KEY};
+const HEADERS_W = {'Content-Type':'application/json','X-Access-Key': API_KEY};
+const SALDO_INICIAL = 815000;
 
-let tx = [];
-let history = [];
-let future = [];
-const MAX_HISTORY = 20;
-let newTipo = 'ingreso';
-let pTab = 'cobrar';
+let tx = [], history = [], future = [];
+let newTipo = 'ingreso', newEstado = 'pendiente';
+let filters = {tipo:'', estado:''};
 let charts = {};
-let version = null;
+let editId = null;
 
-function snapshot() {
-  history.push(JSON.stringify(tx));
-  if (history.length > MAX_HISTORY) history.shift();
-  future = [];
-  updateUndoRedo();
-}
+// ── UTILS ──
+const fmt  = n => '$' + Math.round(n).toLocaleString('es-CO');
+const fmtS = n => n>=1000000 ? '$'+(n/1000000).toFixed(1)+'M' : n>=1000 ? '$'+(n/1000).toFixed(0)+'K' : fmt(n);
+const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const byDate = (a,b) => (b.fecha||'').localeCompare(a.fecha||'');
 
-function undo() {
-  if (!history.length) return;
-  future.push(JSON.stringify(tx));
-  tx = JSON.parse(history.pop());
-  refreshAll();
-  saveData();
-  updateUndoRedo();
-  showToast('↩ Deshecho');
-}
-
-function redo() {
-  if (!future.length) return;
-  history.push(JSON.stringify(tx));
-  tx = JSON.parse(future.pop());
-  refreshAll();
-  saveData();
-  updateUndoRedo();
-  showToast('↪ Rehecho');
-}
-
-function updateUndoRedo() {
-  const u = document.getElementById('undo-btn');
-  const r = document.getElementById('redo-btn');
-  if (u) { u.disabled = !history.length; u.style.opacity = history.length ? '1' : '0.35'; }
-  if (r) { r.disabled = !future.length;  r.style.opacity = future.length  ? '1' : '0.35'; }
-}
-
-const fmt = n => '$' + Math.round(n).toLocaleString('es-CO');
-const fmtS = n => n >= 1000000 ? '$' + (n/1000000).toFixed(1) + 'M' : n >= 1000 ? '$' + (n/1000).toFixed(0) + 'K' : fmt(n);
-
-function setSync(state, msg) {
+// ── SYNC ──
+function setSyncState(s, msg) {
   const d = document.getElementById('sdot');
-  const t = document.getElementById('stxt');
-  d.className = 'sync-dot' + (state==='ok' ? ' ok' : state==='busy' ? ' busy' : state==='err' ? ' err' : '');
-  t.textContent = msg;
+  d.className = 'sync-dot' + (s==='ok'?' ok':s==='busy'?' busy':s==='err'?' err':'');
+  d.title = msg || '';
+  document.getElementById('sync-txt').textContent = msg || '';
 }
 
 async function loadData() {
-  setSync('busy', 'Cargando...');
+  setSyncState('busy','Cargando...');
   try {
-    const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Access-Key': '$2a$10$KZ/5PuQY3f8ISTkZSbJ5gub./tyjiLmo/zJ64W04yRRGN0KaOyWtW' } });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const record = json.record;
-    version = json.metadata?.version;
-    if (record.transactions && record.transactions.length > 0) {
-      tx = record.transactions;
+    const r = await fetch(URL_BIN+'/latest', {headers: HEADERS_R});
+    if(!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    const rec = j.record;
+    if(rec.transactions && rec.transactions.length) {
+      tx = rec.transactions;
     } else {
-      tx = JSON.parse(JSON.stringify(SEED));
+      tx = getSeed();
       await saveData(true);
     }
-    setSync('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}));
+    const t = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    setSyncState('ok', '↻ '+t);
     return true;
   } catch(e) {
-    setSync('err', 'Sin conexión · local');
-    if (tx.length === 0) tx = JSON.parse(JSON.stringify(SEED));
+    setSyncState('err','Sin conexión');
+    if(!tx.length) tx = getSeed();
     return false;
   }
 }
 
 async function saveData(silent) {
-  if (!silent) setSync('busy', 'Guardando...');
+  if(!silent) setSyncState('busy','Guardando...');
   try {
-    const res = await fetch(BIN_URL, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Access-Key': '$2a$10$KZ/5PuQY3f8ISTkZSbJ5gub./tyjiLmo/zJ64W04yRRGN0KaOyWtW' },
-      body: JSON.stringify({ transactions: tx })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    version = json.metadata?.version;
-    setSync('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}));
+    const r = await fetch(URL_BIN, {method:'PUT', headers: HEADERS_W, body: JSON.stringify({transactions: tx, version:2, saldo_inicial: SALDO_INICIAL})});
+    if(!r.ok) throw new Error(r.status);
+    const t = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    setSyncState('ok','✓ '+t);
     return true;
   } catch(e) {
-    setSync('err', 'Error al guardar');
+    setSyncState('err','Error al guardar');
     return false;
   }
 }
 
 async function syncNow() {
-  const btn = document.getElementById('sync-btn');
-  btn.disabled = true; btn.textContent = '...';
   await loadData();
-  refreshAll();
-  btn.disabled = false; btn.textContent = '↻';
-  showToast('✓ Datos actualizados');
+  renderAll();
+  showToast('✓ Sincronizado');
 }
 
-function calcM() {
-  const inP  = tx.filter(t => t.tipo==='ingreso' && t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-  const outP = tx.filter(t => t.tipo==='egreso'  && t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-  return {
-    totalIn:  tx.filter(t=>t.tipo==='ingreso').reduce((s,t)=>s+t.valor,0),
-    totalOut: tx.filter(t=>t.tipo==='egreso').reduce((s,t)=>s+t.valor,0),
-    saldo:    INIT_BAL + inP - outP,
-    cobrar:   tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0),
-    pagar:    tx.filter(t=>t.tipo==='egreso' &&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0),
-    nPend:    tx.filter(t=>t.estado==='pendiente').length,
-  };
+// ── HISTORY ──
+function snap() {
+  history.push(JSON.stringify(tx));
+  if(history.length > 20) history.shift();
+  future = [];
+  updateUndoBtn();
 }
-
-function renderMetrics() {
-  const m = calcM();
-  document.getElementById('sb-bal').textContent = fmtS(m.saldo);
-  document.getElementById('pend-n').textContent = m.nPend;
-  document.getElementById('metrics').innerHTML = `
-    <div class="metric mg"><div class="mlabel">Total ingresos</div><div class="mval">${fmtS(m.totalIn)}</div><div class="msub">${tx.filter(t=>t.tipo==='ingreso').length} movs</div></div>
-    <div class="metric mr"><div class="mlabel">Total egresos</div><div class="mval">${fmtS(m.totalOut)}</div><div class="msub">${tx.filter(t=>t.tipo==='egreso').length} movs</div></div>
-    <div class="metric mb"><div class="mlabel">Saldo cuenta</div><div class="mval">${fmtS(m.saldo)}</div><div class="msub">inicial ${fmtS(INIT_BAL)}</div></div>
-    <div class="metric ma"><div class="mlabel">Por cobrar</div><div class="mval">${fmtS(m.cobrar)}</div><div class="msub">${m.nPend} pendientes</div></div>
-  `;
+function undoAction() {
+  if(!history.length) return;
+  future.push(JSON.stringify(tx));
+  tx = JSON.parse(history.pop());
+  renderAll(); saveData();
+  showToast('↩ Deshecho'); updateUndoBtn();
 }
-
-function renderRecent() {
-  const list = [...tx].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,8);
-  document.getElementById('recent-tb').innerHTML = list.map(t => `<tr>
-    <td><span class="badge ${t.tipo==='ingreso'?'bi':'be'}">${t.tipo}</span></td>
-    <td class="trunc">${t.concepto||'—'}</td>
-    <td class="muted" style="font-size:11px">${t.categoria}</td>
-    <td class="muted">${t.quien_debe}</td>
-    <td class="mono muted">${t.fecha||'—'}</td>
-    <td class="mono" style="text-align:right;color:${t.tipo==='ingreso'?'#4ade80':'#f87171'}">${fmt(t.valor)}</td>
-    <td><span class="badge ${t.estado==='pagado'?'bpg':'bp'}">${t.estado}</span></td>
-  </tr>`).join('');
+function updateUndoBtn() {
+  const b = document.getElementById('undo-rb');
+  b.style.opacity = history.length ? '1' : '0.3';
 }
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); undoAction(); }
+});
 
-function renderCharts() {
-  const months = {};
-  tx.forEach(t => { const m = t.fecha ? t.fecha.slice(0,7) : null; if(!m) return; if(!months[m]) months[m]={in:0,out:0}; months[m][t.tipo==='ingreso'?'in':'out'] += t.valor; });
-  const mk = Object.keys(months).sort();
-  const lbls = mk.map(m => { const [y,mo] = m.split('-'); return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo-1]+"'"+y.slice(2); });
-  if(charts.mes) charts.mes.destroy();
-  charts.mes = new Chart(document.getElementById('ch-mes'), { type:'bar', data:{ labels:lbls, datasets:[
-    {label:'Ingresos',data:mk.map(m=>months[m].in),backgroundColor:'rgba(74,222,128,0.3)',borderColor:'#4ade80',borderWidth:1,borderRadius:2},
-    {label:'Egresos', data:mk.map(m=>months[m].out),backgroundColor:'rgba(248,113,113,0.3)',borderColor:'#f87171',borderWidth:1,borderRadius:2}
-  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-    scales:{ x:{ticks:{color:'#888',font:{size:10}},grid:{display:false}}, y:{ticks:{color:'#888',font:{size:10},callback:v=>fmtS(v)},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false}} } }
-  });
-  const cats = {};
-  tx.forEach(t => { if(!cats[t.categoria]) cats[t.categoria]=0; cats[t.categoria]+=t.valor; });
-  const ck = Object.keys(cats).sort((a,b)=>cats[b]-cats[a]).slice(0,5);
-  const clrs = ['rgba(74,222,128,0.4)','rgba(96,165,250,0.4)','rgba(251,191,36,0.4)','rgba(167,139,250,0.4)','rgba(45,212,191,0.4)'];
-  const bclrs = ['#4ade80','#60a5fa','#fbbf24','#a78bfa','#2dd4bf'];
-  if(charts.cat) charts.cat.destroy();
-  charts.cat = new Chart(document.getElementById('ch-cat'), { type:'doughnut', data:{ labels:ck, datasets:[{data:ck.map(c=>cats[c]),backgroundColor:clrs,borderColor:bclrs,borderWidth:2}] },
-    options:{ responsive:true, maintainAspectRatio:false, cutout:'62%', plugins:{ legend:{ position:'right', labels:{color:'#888',font:{size:10},boxWidth:8,padding:6} } } }
-  });
+// ── FEED ──
+function togglePill(el) {
+  const f = el.dataset.f, v = el.dataset.v;
+  document.querySelectorAll(`.pill[data-f="${f}"]`).forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  filters[f] = v;
+  renderFeed();
 }
 
 function getFiltered() {
-  const s = (document.getElementById('srch')||{value:''}).value.toLowerCase();
-  const ft = (document.getElementById('f-tipo')||{value:''}).value;
-  const fe = (document.getElementById('f-est')||{value:''}).value;
-  const fc = (document.getElementById('f-cat')||{value:''}).value;
-  const fm = (document.getElementById('f-mes')||{value:''}).value;
+  const s = document.getElementById('srch').value.toLowerCase();
+  const ent = document.getElementById('f-ent').value;
   return tx.filter(t => {
-    if(ft && t.tipo !== ft) return false;
-    if(fe && t.estado !== fe) return false;
-    if(fc && t.categoria !== fc) return false;
-    if(fm && t.fecha && !t.fecha.startsWith(fm)) return false;
-    if(s && !(t.concepto||'').toLowerCase().includes(s) && !(t.codigo||'').toString().toLowerCase().includes(s) && !t.categoria.toLowerCase().includes(s)) return false;
+    if(filters.tipo && t.tipo !== filters.tipo) return false;
+    if(filters.estado && t.estado !== filters.estado) return false;
+    if(ent && t.entidad !== ent) return false;
+    if(s && !(t.concepto||'').toLowerCase().includes(s) &&
+            !(t.categoria||'').toLowerCase().includes(s) &&
+            !(t.codigo||'').toLowerCase().includes(s)) return false;
     return true;
   });
 }
 
-function renderTable() {
-  const f = getFiltered().sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
-  document.getElementById('tbl-cnt').textContent = f.length + ' / ' + tx.length;
-  document.getElementById('main-tb').innerHTML = f.map(t => {
-    const idx = tx.indexOf(t);
-    return `<tr>
-      <td><span class="badge ${t.tipo==='ingreso'?'bi':'be'}">${t.tipo}</span></td>
-      <td class="trunc">${t.concepto||'—'}</td>
-      <td class="muted" style="font-size:11px">${t.categoria}</td>
-      <td class="muted">${t.quien_debe}</td>
-      <td class="muted" style="font-size:11px">${t.medio==='TRANSF'?'Transf.':'Efectivo'}</td>
-      <td class="mono muted" style="font-size:11px">${t.fecha||'—'}</td>
-      <td class="mono" style="text-align:right;color:${t.tipo==='ingreso'?'#4ade80':'#f87171'}">${fmt(t.valor)}</td>
-      <td class="mono muted" style="font-size:11px">${t.iva ? fmt(t.iva) : '—'}</td>
-      <td><span class="badge ${t.estado==='pagado'?'bpg':'bp'}">${t.estado}</span></td>
-      <td><button class="act-btn" onclick="toggleEstado(${idx})">${t.estado==='pendiente'?'✓ pagar':'↩'}</button></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="10" class="empty">Sin resultados</td></tr>';
-}
-
-function populateFilters() {
-  const cats = [...new Set(tx.map(t=>t.categoria))].sort();
-  const months = [...new Set(tx.map(t=>t.fecha?t.fecha.slice(0,7):null).filter(Boolean))].sort();
-  const fc = document.getElementById('f-cat');
-  const fm = document.getElementById('f-mes');
-  if(fc.options.length <= 1) { cats.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; fc.appendChild(o); }); }
-  if(fm.options.length <= 1) { months.forEach(m => { const o = document.createElement('option'); o.value=m; const [y,mo]=m.split('-'); o.textContent=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo-1]+"'"+y.slice(2); fm.appendChild(o); }); }
-}
-
-function renderPendientes() {
-  const m = calcM();
-  document.getElementById('pmet').innerHTML = `
-    <div class="metric mg"><div class="mlabel">Por cobrar</div><div class="mval">${fmtS(m.cobrar)}</div></div>
-    <div class="metric mr"><div class="mlabel">Por pagar</div><div class="mval">${fmtS(m.pagar)}</div></div>
-  `;
-  const isCobrar = pTab === 'cobrar';
-  const list = tx.map((t,i)=>({...t,idx:i})).filter(t => t.estado==='pendiente' && (isCobrar ? t.tipo==='ingreso' : t.tipo==='egreso')).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-  document.getElementById('plist').innerHTML = list.length ? list.map(t => `
-    <div class="pitem">
-      <div class="pdot" style="background:${t.tipo==='ingreso'?'#4ade80':'#f87171'}"></div>
-      <div class="pmid"><div class="pcon">${t.concepto||t.categoria}</div><div class="pwho">${t.quien_paga} → ${t.quien_debe} · ${t.medio==='TRANSF'?'Transf.':'Efectivo'}</div></div>
-      <div class="pright"><div class="pval" style="color:${t.tipo==='ingreso'?'#4ade80':'#f87171'}">${fmt(t.valor)}</div><div class="pdate">${t.fecha||'Sin fecha'}</div></div>
-      <button class="mark-btn" onclick="toggleEstado(${t.idx})">${t.tipo==='ingreso'?'✓ cobrado':'✓ pagado'}</button>
-    </div>`).join('') : '<div class="empty">Todo al día aquí</div>';
-}
-
-function setPTab(tab, el) {
-  pTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderPendientes();
-}
-
-function renderDeudas() {
-  // Lo que La Nevera le debe a 3DUNA (ingresos pendientes donde quien_debe=la nevera)
-  const inNev  = tx.filter(t=>t.tipo==='ingreso'&&t.quien_debe==='la nevera'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-  // Lo que 3DUNA le debe a Nicolás: egresos pendientes que él pagó de su bolsillo (nicolas paga→3duna debe→proveedor recibe)
-  const d3DuNic = tx.filter(t=>t.tipo==='egreso'&&t.estado==='pendiente'&&t.quien_paga==='nicolas'&&t.quien_debe==='3duna'&&t.pago_a==='proveedor').reduce((s,t)=>s+t.valor,0);
-  // Lo que Nicolás gestiona y aún no ha cobrado para 3DUNA (ingresos pendientes via nicolas)
-  const nicCobrar = tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pendiente'&&t.quien_debe==='nicolas'&&t.pago_a==='3duna').reduce((s,t)=>s+t.valor,0);
-  // Lo que 3DUNA le debe a Samuel
-  const d3DuSam = tx.filter(t=>t.tipo==='egreso'&&t.estado==='pendiente'&&(t.quien_paga==='samuel'&&t.quien_debe==='3duna')||(t.quien_debe==='3duna'&&t.pago_a==='samuel')).reduce((s,t)=>s+t.valor,0);
-  const comLN  = tx.filter(t=>t.tipo==='ingreso'&&t.categoria==='cliente referido LN'&&t.estado==='pagado').reduce((s,t)=>s+t.valor*0.1,0);
-  const com3D  = tx.filter(t=>t.tipo==='ingreso'&&t.categoria==='referido 3DUNA'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
-  const nevPag = tx.filter(t=>t.tipo==='egreso'&&t.quien_paga==='la nevera'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
-
-  // Detail rows for nicolas
-  const nicDetalle = tx.filter(t=>t.tipo==='egreso'&&t.estado==='pendiente'&&t.quien_paga==='nicolas'&&t.quien_debe==='3duna'&&t.pago_a==='proveedor')
-    .map(t=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid rgba(255,255,255,0.05);font-size:10px"><span style="color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${t.concepto||t.categoria}</span><span style="font-family:var(--mono);color:#fbbf24">${fmt(t.valor)}</span></div>`).join('');
-
-  document.getElementById('dg').innerHTML = `
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#f87171"></span>La Nevera debe a 3DUNA</div><div class="damt" style="color:#4ade80">${fmt(inNev)}</div><div class="dsub">por cobrar pendiente</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#fbbf24"></span>3DUNA debe a Nicolás</div><div class="damt" style="color:#fbbf24">${fmt(d3DuNic)}</div><div class="dsub">gastos que él adelantó</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#a78bfa"></span>3DUNA debe a Samuel</div><div class="damt" style="color:${d3DuSam>0?'#fbbf24':'#4ade80'}">${fmt(d3DuSam)}</div><div class="dsub">movimientos pendientes</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#60a5fa"></span>Nicolás cobra para 3DUNA</div><div class="damt" style="color:#60a5fa">${fmt(nicCobrar)}</div><div class="dsub">ingresos pendientes que él gestiona</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#2dd4bf"></span>Comisión LN → 3D</div><div class="damt" style="color:#4ade80">${fmt(comLN)}</div><div class="dsub">10% referidos pagados</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#fbbf24"></span>Referidos 3D → LN</div><div class="damt" style="color:#4ade80">${fmt(com3D)}</div><div class="dsub">pendiente de cobro</div></div>
-    <div class="dcard"><div class="dname"><span class="ddot" style="background:#4ade80"></span>LN pagó proveedores</div><div class="damt" style="color:#60a5fa">${fmt(nevPag)}</div><div class="dsub">total pagado por LN</div></div>
-  `;
-  const sorted = [...tx].filter(t=>t.fecha&&t.estado==='pagado').sort((a,b)=>a.fecha.localeCompare(b.fecha));
-  let bal = INIT_BAL;
-  const pts = [{x:'Inicio',y:bal}];
-  sorted.forEach(t => { bal += t.tipo==='ingreso' ? t.valor : -t.valor; pts.push({x:t.fecha, y:bal}); });
-  if(charts.bal) charts.bal.destroy();
-  charts.bal = new Chart(document.getElementById('ch-bal'), { type:'line', data:{ labels:pts.map(p=>p.x), datasets:[{data:pts.map(p=>p.y),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,0.07)',borderWidth:1.5,pointRadius:1,tension:0.3,fill:true}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{ x:{ticks:{color:'#888',font:{size:9},maxTicksLimit:8},grid:{display:false}}, y:{ticks:{color:'#888',font:{size:9},callback:v=>fmtS(v)},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false}} } }
+function groupByMonth(list) {
+  const g = {};
+  const noDate = [];
+  list.forEach(t => {
+    if(!t.fecha) { noDate.push(t); return; }
+    const m = t.fecha.slice(0,7);
+    if(!g[m]) g[m] = [];
+    g[m].push(t);
   });
+  const sorted = Object.keys(g).sort().reverse();
+  const result = sorted.map(m => ({label: fmtMonth(m), items: g[m]}));
+  if(noDate.length) result.push({label:'Sin fecha', items: noDate});
+  return result;
 }
 
-async function toggleEstado(idx) {
-  snapshot();
-  tx[idx].estado = tx[idx].estado === 'pendiente' ? 'pagado' : 'pendiente';
-  refreshAll();
-  const ok = await saveData();
-  showToast(ok ? (tx[idx].estado==='pagado'?'✓ Marcado como pagado':'↩ Revertido') : '⚠ Guardado local, sin conexión');
+function fmtMonth(m) {
+  const [y,mo] = m.split('-');
+  return ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][+mo-1] + ' ' + y;
 }
 
+const ENTIDAD_COLORS = {
+  'nicolas':   '#60a5fa',
+  'la nevera': '#a78bfa',
+  'samuel':    '#2dd4bf',
+  'cliente':   '#4ade80',
+  'proveedor': '#888',
+};
+
+function renderFeed() {
+  const filtered = getFiltered().sort(byDate);
+  const groups = groupByMonth(filtered);
+  const el = document.getElementById('feed-content');
+  if(!filtered.length) { el.innerHTML = '<div class="empty">Sin resultados</div>'; return; }
+  el.innerHTML = groups.map(g => `
+    <div class="tx-group">
+      <div class="tx-group-label">${g.label} · ${g.items.length}</div>
+      ${g.items.map(t => txRow(t)).join('')}
+    </div>`).join('');
+}
+
+function txRow(t) {
+  const color = t.tipo === 'ingreso' ? 'var(--green)' : 'var(--red)';
+  const sign  = t.tipo === 'ingreso' ? '+' : '−';
+  const eColor = ENTIDAD_COLORS[t.entidad] || '#888';
+  const idx = tx.indexOf(t);
+  return `<div class="tx-row" id="txr-${t.id}">
+    <div class="tx-indicator" style="background:${color};opacity:${t.estado==='pagado'?'1':'0.4'}"></div>
+    <div class="tx-main">
+      <div class="tx-concepto">${t.concepto || '<span style="color:var(--t3)">'+t.categoria+'</span>'}</div>
+      <div class="tx-meta">${t.fecha||'Sin fecha'} · ${t.medio==='TRANSF'?'Transferencia':'Efectivo'}${t.codigo?' · '+t.codigo:''}</div>
+    </div>
+    <div class="tx-entidad" style="color:${eColor};background:${eColor}18;border-color:${eColor}25">${t.entidad}</div>
+    <div class="tx-cat">${t.categoria}</div>
+    <div class="tx-valor" style="color:${color}">${sign}${fmt(t.valor)}</div>
+    <div class="tx-estado">
+      <button class="estado-btn ${t.estado}" onclick="toggleEstado('${t.id}')">${t.estado}</button>
+      <button class="del-btn" onclick="deleteTx('${t.id}')" title="Eliminar">×</button>
+    </div>
+  </div>`;
+}
+
+// ── BALANCES ──
+function renderBalances() {
+  const entidades = ['la nevera','nicolas','samuel','cliente','proveedor'];
+  const cards = entidades.map(ent => {
+    const entra  = tx.filter(t=>t.entidad===ent&&t.tipo==='ingreso'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+    const sale   = tx.filter(t=>t.entidad===ent&&t.tipo==='egreso' &&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+    const pCobrar= tx.filter(t=>t.entidad===ent&&t.tipo==='ingreso'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+    const pPagar = tx.filter(t=>t.entidad===ent&&t.tipo==='egreso' &&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+    const neto   = entra - sale;
+    const color  = ENTIDAD_COLORS[ent] || '#888';
+    const netColor = neto > 0 ? 'var(--green)' : neto < 0 ? 'var(--red)' : 'var(--t2)';
+
+    const rows = [
+      entra  ? `<div class="bal-row"><span class="bal-row-label">Pagado a 3DUNA</span><span class="bal-row-val" style="color:var(--green)">${fmt(entra)}</span></div>` : '',
+      sale   ? `<div class="bal-row"><span class="bal-row-label">3DUNA pagó</span><span class="bal-row-val" style="color:var(--red)">${fmt(sale)}</span></div>` : '',
+      pCobrar? `<div class="bal-row"><span class="bal-row-label">Por cobrar</span><span class="bal-row-val" style="color:var(--amber)">${fmt(pCobrar)}</span></div>` : '',
+      pPagar ? `<div class="bal-row"><span class="bal-row-label">Por pagar</span><span class="bal-row-val" style="color:var(--amber)">${fmt(pPagar)}</span></div>` : '',
+    ].filter(Boolean).join('');
+
+    return `<div class="bal-card" style="border-color:${color}22">
+      <div class="bal-header">
+        <div class="bal-name" style="color:${color}">${ent}</div>
+        <div class="bal-badge" style="background:${color}18;color:${color}">${tx.filter(t=>t.entidad===ent).length} movs</div>
+      </div>
+      <div class="bal-number" style="color:${netColor}">${fmtS(Math.abs(neto))}</div>
+      <div class="bal-sub" style="color:var(--t3)">${neto>0?'3DUNA recibió más':neto<0?'3DUNA pagó más':'En equilibrio'}</div>
+      ${rows}
+    </div>`;
+  });
+  document.getElementById('bal-grid').innerHTML = cards.join('');
+}
+
+// ── RESUMEN ──
+function renderResumen() {
+  const inP  = tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const outP = tx.filter(t=>t.tipo==='egreso' &&t.estado==='pagado').reduce((s,t)=>s+t.valor,0);
+  const saldo = SALDO_INICIAL + inP - outP;
+  const cobrar= tx.filter(t=>t.tipo==='ingreso'&&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+  const pagar = tx.filter(t=>t.tipo==='egreso' &&t.estado==='pendiente').reduce((s,t)=>s+t.valor,0);
+
+  document.getElementById('sum-metrics').innerHTML = `
+    <div class="smet"><div class="smet-label">Saldo cuenta</div><div class="smet-val" style="color:var(--blue)">${fmtS(saldo)}</div><div class="smet-sub">desde ${fmt(SALDO_INICIAL)}</div></div>
+    <div class="smet"><div class="smet-label">Total ingresos</div><div class="smet-val" style="color:var(--green)">${fmtS(inP)}</div><div class="smet-sub">${tx.filter(t=>t.tipo==='ingreso').length} movs</div></div>
+    <div class="smet"><div class="smet-label">Total egresos</div><div class="smet-val" style="color:var(--red)">${fmtS(outP)}</div><div class="smet-sub">${tx.filter(t=>t.tipo==='egreso').length} movs</div></div>
+    <div class="smet"><div class="smet-label">Por cobrar</div><div class="smet-val" style="color:var(--amber)">${fmtS(cobrar)}</div><div class="smet-sub">pendiente ${fmt(cobrar-pagar)}</div></div>
+  `;
+
+  // Monthly chart
+  const months = {};
+  tx.forEach(t => {
+    const m = t.fecha ? t.fecha.slice(0,7) : null; if(!m) return;
+    if(!months[m]) months[m] = {in:0,out:0};
+    months[m][t.tipo==='ingreso'?'in':'out'] += t.valor;
+  });
+  const mk = Object.keys(months).sort();
+  const mlbls = mk.map(m => { const [y,mo]=m.split('-'); return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo-1]+"'"+y.slice(2); });
+  if(charts.mes) charts.mes.destroy();
+  charts.mes = new Chart(document.getElementById('ch-mes'), {type:'bar', data:{labels:mlbls, datasets:[
+    {label:'Ingresos',data:mk.map(m=>months[m].in),backgroundColor:'rgba(74,222,128,.25)',borderColor:'#4ade80',borderWidth:1,borderRadius:3},
+    {label:'Egresos', data:mk.map(m=>months[m].out),backgroundColor:'rgba(248,113,113,.25)',borderColor:'#f87171',borderWidth:1,borderRadius:3}
+  ]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#555',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#555',font:{size:10},callback:v=>fmtS(v)},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}}}}});
+
+  // Category donut
+  const cats = {};
+  tx.forEach(t => { cats[t.categoria] = (cats[t.categoria]||0) + t.valor; });
+  const ck = Object.keys(cats).sort((a,b)=>cats[b]-cats[a]).slice(0,6);
+  const clrs = ['#4ade8044','#60a5fa44','#fbbf2444','#a78bfa44','#2dd4bf44','#f8717144'];
+  const bclrs= ['#4ade80','#60a5fa','#fbbf24','#a78bfa','#2dd4bf','#f87171'];
+  if(charts.cat) charts.cat.destroy();
+  charts.cat = new Chart(document.getElementById('ch-cat'), {type:'doughnut', data:{labels:ck, datasets:[{data:ck.map(c=>cats[c]),backgroundColor:clrs,borderColor:bclrs,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#666',font:{size:10},boxWidth:8,padding:6}}}}});
+
+  // Balance line
+  const sorted = [...tx].filter(t=>t.fecha&&t.estado==='pagado').sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  let bal = SALDO_INICIAL;
+  const pts = [{x:'Inicio',y:bal}];
+  sorted.forEach(t => { bal += t.tipo==='ingreso'?t.valor:-t.valor; pts.push({x:t.fecha,y:bal}); });
+  if(charts.bal) charts.bal.destroy();
+  charts.bal = new Chart(document.getElementById('ch-bal'), {type:'line', data:{labels:pts.map(p=>p.x), datasets:[{data:pts.map(p=>p.y),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.06)',borderWidth:1.5,pointRadius:1,tension:.3,fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#555',font:{size:9},maxTicksLimit:8},grid:{display:false}},y:{ticks:{color:'#555',font:{size:9},callback:v=>fmtS(v)},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}}}}});
+}
+
+// ── ACTIONS ──
+async function toggleEstado(id) {
+  snap();
+  const t = tx.find(t=>t.id===id); if(!t) return;
+  t.estado = t.estado==='pendiente'?'pagado':'pendiente';
+  renderAll(); await saveData();
+  showToast(t.estado==='pagado'?'✓ Marcado como pagado':'↩ Revertido a pendiente');
+}
+
+async function deleteTx(id) {
+  snap();
+  tx = tx.filter(t=>t.id!==id);
+  renderAll(); await saveData();
+  showToast('Movimiento eliminado');
+}
+
+// ── MODAL ──
 function setTipo(t) {
   newTipo = t;
-  document.getElementById('btn-i').className = 'tbtn' + (t==='ingreso' ? ' on-i' : '');
-  document.getElementById('btn-e').className = 'tbtn' + (t==='egreso' ? ' on-e' : '');
+  document.getElementById('ti').className = 'ttog-btn'+(t==='ingreso'?' on-i':'');
+  document.getElementById('te').className = 'ttog-btn'+(t==='egreso'?' on-e':'');
 }
+function setEstado(e) {
+  newEstado = e;
+  document.getElementById('ep').className  = 'etog-btn'+(e==='pendiente'?' on-p':'');
+  document.getElementById('epg').className = 'etog-btn'+(e==='pagado'?' on-pg':'');
+}
+function openModal(id) {
+  editId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Editar movimiento' : 'Nuevo movimiento';
+  if(id) {
+    const t = tx.find(t=>t.id===id);
+    setTipo(t.tipo); setEstado(t.estado);
+    document.getElementById('n-cat').value = t.categoria;
+    document.getElementById('n-ent').value = t.entidad;
+    document.getElementById('n-con').value = t.concepto||'';
+    document.getElementById('n-val').value = t.valor;
+    document.getElementById('n-iva').value = t.iva||0;
+    document.getElementById('n-fec').value = t.fecha||'';
+    document.getElementById('n-med').value = t.medio||'TRANSF';
+    document.getElementById('n-cod').value = t.codigo||'';
+  } else {
+    setTipo('ingreso'); setEstado('pendiente');
+    ['n-con','n-val','n-iva','n-cod'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('n-fec').valueAsDate = new Date();
+  }
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); editId=null; }
 
-function openModal() { document.getElementById('modal').classList.add('open'); document.getElementById('n-fec').valueAsDate = new Date(); }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+async function saveTx() {
+  const val = parseFloat(document.getElementById('n-val').value)||0;
+  const con = document.getElementById('n-con').value.trim();
+  if(!val) { showToast('Ingresa un valor'); return; }
 
-async function saveTransaction() {
-  const v = parseFloat(document.getElementById('n-val').value) || 0;
-  const c = document.getElementById('n-con').value.trim();
-  if(!v) { showToast('Ingresa un valor'); return; }
-  if(!c) { showToast('Ingresa un concepto'); return; }
+  snap();
   const btn = document.getElementById('save-btn');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  snapshot();
-  tx.push({ tipo:newTipo, estado:document.getElementById('n-est').value, categoria:document.getElementById('n-cat').value, valor:v, iva:parseFloat(document.getElementById('n-iva').value)||0, quien_paga:document.getElementById('n-qp').value, quien_debe:document.getElementById('n-qd').value, pago_a:document.getElementById('n-pa').value, fecha:document.getElementById('n-fec').value, medio:document.getElementById('n-med').value, concepto:c, codigo:document.getElementById('n-cod').value||null });
+  btn.disabled=true; btn.textContent='Guardando...';
+
+  const entry = {
+    id: editId || uid(),
+    tipo: newTipo,
+    estado: newEstado,
+    categoria: document.getElementById('n-cat').value,
+    entidad: document.getElementById('n-ent').value,
+    concepto: con,
+    valor: val,
+    iva: parseFloat(document.getElementById('n-iva').value)||0,
+    fecha: document.getElementById('n-fec').value,
+    medio: document.getElementById('n-med').value,
+    codigo: document.getElementById('n-cod').value||'',
+    created_at: editId ? (tx.find(t=>t.id===editId)||{}).created_at : new Date().toISOString()
+  };
+
+  if(editId) { const i=tx.findIndex(t=>t.id===editId); if(i>-1) tx[i]=entry; }
+  else tx.unshift(entry);
+
   closeModal();
-  refreshAll();
+  renderAll();
   const ok = await saveData();
-  showToast(ok ? '✓ Guardado y sincronizado' : '⚠ Guardado local, sin conexión');
-  ['n-con','n-val','n-iva','n-cod'].forEach(id => document.getElementById(id).value = '');
-  btn.disabled = false; btn.textContent = 'Guardar';
+  showToast(ok ? '✓ Guardado' : '⚠ Sin conexión — guardado local');
+  btn.disabled=false; btn.textContent='Guardar';
 }
 
-function showPage(page, el) {
-  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display='none');
-  document.getElementById('page-'+page).style.display = '';
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
-  if(page==='movimientos') { populateFilters(); renderTable(); }
-  if(page==='pendientes') renderPendientes();
-  if(page==='deudas') renderDeudas();
+// ── PAGES ──
+function gotoPage(p, el) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.rail-btn[id^="rb-"]').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('rb-'+p).classList.add('active');
+  const titles = {feed:'Feed',balances:'Balances',resumen:'Resumen'};
+  document.getElementById('page-title').textContent = titles[p];
+  if(p==='balances') renderBalances();
+  if(p==='resumen') renderResumen();
 }
 
-function refreshAll() {
-  renderMetrics(); renderRecent(); renderCharts();
-  const cur = ['movimientos','pendientes','deudas'].find(p => document.getElementById('page-'+p).style.display !== 'none');
-  if(cur==='movimientos') renderTable();
-  if(cur==='pendientes') renderPendientes();
-  if(cur==='deudas') renderDeudas();
+function renderAll() {
+  renderFeed();
+  const active = document.querySelector('.page.active');
+  if(active && active.id==='page-balances') renderBalances();
+  if(active && active.id==='page-resumen') renderResumen();
 }
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show';
-  setTimeout(() => t.className = 'toast', 2800);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show';
+  setTimeout(()=>t.className='toast',2800);
 }
 
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
-});
+// ── SEED ──
+function getSeed() {
+  return [{"id":"a1b2c3d4e5f6","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":160000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-01-20","medio":"TRANSF","concepto":"PLA NEGRO POLYMASTER","codigo":""},{"id":"b2c3d4e5f6a1","tipo":"egreso","estado":"pagado","categoria":"mantenimiento","valor":73450,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"I+D switches y 3ra mano","codigo":"didacticas eletc"},{"id":"c3d4e5f6a1b2","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":30000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-01","medio":"TRANSF","concepto":"repuesto moto","codigo":""},{"id":"d4e5f6a1b2c3","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":80000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-01","medio":"TRANSF","concepto":"piezas dragon","codigo":""},{"id":"e5f6a1b2c3d4","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":158000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-02","medio":"TRANSF","concepto":"filamento PETG blanco","codigo":"POLYMASTERS"},{"id":"f6a1b2c3d4e5","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":1798000,"iva":341620,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-05","medio":"TRANSF","concepto":"OZ studio 012605 50%","codigo":"COT-012605"},{"id":"a1b2c3d4e5f7","tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":60000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-02-05","medio":"TRANSF","concepto":"repuesto fibra oasis","codigo":""},{"id":"b2c3d4e5f6a2","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision","codigo":""},{"id":"c3d4e5f6a1b3","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":126800,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"frame nav25-comision #2","codigo":""},{"id":"d4e5f6a1b2c4","tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":332700,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Taima","codigo":""},{"id":"e5f6a1b2c3d5","tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":330000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-10","medio":"TRANSF","concepto":"Impresion Camilax","codigo":""},{"id":"f6a1b2c3d4e6","tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":150000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-02-11","medio":"TRANSF","concepto":"frame nav25","codigo":"JUAN PABLO ZULUAGA"},{"id":"a1b2c3d4e5f8","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":1165866,"iva":0,"entidad":"la nevera","direccion":"sale","fecha":"2026-02-11","medio":"TRANSF","concepto":"madera TECA","codigo":"FACTURA 123456"},{"id":"b2c3d4e5f6a3","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":89300,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-12","medio":"TRANSF","concepto":"LIJA THINNER","codigo":"PINTURAS SANTA FE"},{"id":"c3d4e5f6a1b4","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-15","medio":"TRANSF","concepto":"zapatos oasis","codigo":""},{"id":"d4e5f6a1b2c5","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":64000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-18","medio":"TRANSF","concepto":"ACEITE DE COCO","codigo":"Cot 012605-1"},{"id":"e5f6a1b2c3d6","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":50000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-20","medio":"TRANSF","concepto":"case fpv","codigo":""},{"id":"f6a1b2c3d4e7","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":15000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-02-25","medio":"TRANSF","concepto":"camera hold","codigo":""},{"id":"a1b2c3d4e5f9","tipo":"ingreso","estado":"pendiente","categoria":"cliente referido LN","valor":50000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-02-25","medio":"TRANSF","concepto":"Impresion parlantes","codigo":""},{"id":"b2c3d4e5f6a4","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":23800,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-02-26","medio":"TRANSF","concepto":"imanes","codigo":""},{"id":"c3d4e5f6a1b5","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":37800,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-27","medio":"TRANSF","concepto":"masilla","codigo":"Cot 012605-1"},{"id":"d4e5f6a1b2c6","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":52500,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-03-03","medio":"TRANSF","concepto":"bases de pino recompra","codigo":"Cot 022604-2"},{"id":"e5f6a1b2c3d7","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":1721474,"iva":327080,"entidad":"la nevera","direccion":"entra","fecha":"2026-03-04","medio":"TRANSF","concepto":"Tablas pizza teca 50% restante","codigo":"Cot 012605-1"},{"id":"f6a1b2c3d4e8","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":55502,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-03-05","medio":"TRANSF","concepto":"tablones pino madecentro","codigo":"Cot 022602"},{"id":"a1b2c3d4e5g1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":58137,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3mm","codigo":"DRONES"},{"id":"b2c3d4e5f6b1","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":82911,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"fresas fibra 3 set x10","codigo":"DRONES"},{"id":"c3d4e5f6a2b1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":20280,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 125x75 3mm","codigo":"DRONES"},{"id":"d4e5f6a1c2b1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":129406,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x400 3mm","codigo":"DRONES"},{"id":"e5f6a1b3c2d1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":142574,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Tornilleria","codigo":"DRONES"},{"id":"f6a1b2d3c4e1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":179434,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 3mm","codigo":"DRONES"},{"id":"a1b3c2d4e5f1","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":124300,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 200x300 3.5mm","codigo":"DRONES"},{"id":"b2c4d3e5f6a5","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":147540,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placa 300x400 2.5mm","codigo":"DRONES"},{"id":"c3d5e4f6a1b6","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":59622,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Fresas 2mm x10","codigo":"DRONES"},{"id":"d4e6f5a1b2c7","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":128302,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"Placas 200x300 3mm x2","codigo":"DRONES"},{"id":"e5f1a6b2c3d8","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":90000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"cajas x10","codigo":"DRONES"},{"id":"f6a2b1c3d4e9","tipo":"egreso","estado":"pendiente","categoria":"inversion drones","valor":10000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-02-01","medio":"TRANSF","concepto":"straps x10","codigo":"DRONES"},{"id":"a1b2c3d5e6f1","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":93000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"llave filtro","codigo":"JULIANA ARANGO"},{"id":"b2c3d4f5a6e1","tipo":"ingreso","estado":"pagado","categoria":"inversion drones","valor":25000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"canopy","codigo":""},{"id":"c3d4e5a6f1b7","tipo":"ingreso","estado":"pendiente","categoria":"referido 3DUNA","valor":42500,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"Comision 10% Corte Laser Selva","codigo":""},{"id":"d4e5f6b1a2c8","tipo":"ingreso","estado":"pagado","categoria":"cliente referido LN","valor":340000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"EFECTI","concepto":"WILLIAM gymcats","codigo":""},{"id":"e5f6a1c2b3d9","tipo":"egreso","estado":"pendiente","categoria":"prestamo","valor":90000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"","medio":"EFECTI","concepto":"PRESTAMO SAM","codigo":""},{"id":"f6a1b2e3c4d1","tipo":"ingreso","estado":"pendiente","categoria":"prestamo","valor":50000,"iva":0,"entidad":"samuel","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"PAGO SAM","codigo":""},{"id":"a1b2c4d3e5f2","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":52500,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022604-2","codigo":"022604-2"},{"id":"b2c3e4d5f6a6","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":113000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"","medio":"TRANSF","concepto":"Cotizacion 022602","codigo":"022602-1"},{"id":"c3d4f5e6a1b8","tipo":"egreso","estado":"pendiente","categoria":"reabastecimiento","valor":147000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"","medio":"TRANSF","concepto":"Polipropileno zuluprints","codigo":""},{"id":"d4e5a6f1b2c9","tipo":"egreso","estado":"pagado","categoria":"reabastecimiento","valor":30000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"2026-03-06","medio":"TRANSF","concepto":"BOLILLOS MADERA DOLLARCITY","codigo":"BOLILLOS MADERA"},{"id":"e5f6b1a2c3d2","tipo":"egreso","estado":"pendiente","categoria":"cotizacion","valor":74700,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"id":"f6a1c2b3d4e2","tipo":"egreso","estado":"pagado","categoria":"inversion","valor":407000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-01-13","medio":"TRANSF","concepto":"MADERA ORITO ROBLE","codigo":""},{"id":"a1b3d2c4e5f3","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":84000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"2026-03-06","medio":"TRANSF","concepto":"FILAMENTO AMAZON NINAGATO","codigo":"22603"},{"id":"b2c4e3d5f6a7","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":1000000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-03-11","medio":"TRANSF","concepto":"PAGO 1M lanevera","codigo":""},{"id":"c3d5f4e6a1b9","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":450000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-10","medio":"TRANSF","concepto":"3 frames nav25","codigo":""},{"id":"d4e6a5f1b2ca","tipo":"ingreso","estado":"pendiente","categoria":"inversion drones","valor":30000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-10","medio":"TRANSF","concepto":"dron accesorio","codigo":""},{"id":"e5f1b6a2c3da","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":85000,"iva":0,"entidad":"cliente","direccion":"entra","fecha":"2026-04-11","medio":"TRANSF","concepto":"cotizacion varios","codigo":""},{"id":"f6a2c1b3d4ea","tipo":"egreso","estado":"pagado","categoria":"nomina empleados","valor":800000,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-03-20","medio":"TRANSF","concepto":"nomina marzo","codigo":""},{"id":"a1b3e2c4d5fa","tipo":"egreso","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"entidad":"samuel","direccion":"sale","fecha":"2026-03-20","medio":"EFECTI","concepto":"retiro efectivo","codigo":""},{"id":"b2c4f3e5a6da","tipo":"egreso","estado":"pagado","categoria":"mantenimiento","valor":100000,"iva":0,"entidad":"proveedor","direccion":"sale","fecha":"2026-03-20","medio":"EFECTI","concepto":"pago shopify hp","codigo":""},{"id":"c3d5a4f6b1ea","tipo":"ingreso","estado":"pagado","categoria":"prestamo","valor":240000,"iva":0,"entidad":"samuel","direccion":"entra","fecha":"2026-03-20","medio":"TRANSF","concepto":"pago deuda samuel","codigo":""},{"id":"d4e6b5a1c2fa","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":237000,"iva":0,"entidad":"la nevera","direccion":"entra","fecha":"2026-03-24","medio":"TRANSF","concepto":"Cot 022603 NINA GATO","codigo":""},{"id":"e5f1c6b2d3aa","tipo":"egreso","estado":"pendiente","categoria":"inversion","valor":30000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-03-29","medio":"TRANSF","concepto":"Claywoven patreon addon","codigo":""},{"id":"f6a2d1c3e4ba","tipo":"ingreso","estado":"pagado","categoria":"cotizacion","valor":280000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-05","medio":"TRANSF","concepto":"Piezas Nissan","codigo":""},{"id":"a1b3f2d4c5ca","tipo":"egreso","estado":"pagado","categoria":"cotizacion","valor":150000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-04-06","medio":"TRANSF","concepto":"filamento NARANJA","codigo":""},{"id":"b2c4a3e5d6da","tipo":"ingreso","estado":"pendiente","categoria":"cotizacion","valor":400000,"iva":0,"entidad":"nicolas","direccion":"entra","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA pago pendiente","codigo":""},{"id":"c3d5b4f6e1ea","tipo":"egreso","estado":"pagado","categoria":"reabastecimiento","valor":225000,"iva":0,"entidad":"nicolas","direccion":"sale","fecha":"2026-04-25","medio":"TRANSF","concepto":"filamento NARANJA compra","codigo":""}];
+}
 
 async function init() {
-  document.getElementById('loading-msg').textContent = 'Conectando con JSONBin...';
+  document.getElementById('load-msg').textContent = 'Cargando datos...';
   await loadData();
   document.getElementById('loading').style.display = 'none';
-  document.getElementById('app').style.display = 'grid';
-  refreshAll();
-  updateUndoRedo();
-  setInterval(async () => { await loadData(); refreshAll(); }, 60000);
+  document.getElementById('shell').style.display = 'grid';
+  renderFeed();
+  updateUndoBtn();
+  setInterval(async()=>{ await loadData(); renderAll(); }, 60000);
 }
 
 init();
