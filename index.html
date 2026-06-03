@@ -648,9 +648,11 @@ const TYPE_FORMS = {
     <div class="fg"><label class="fl">Estado</label>${estadoToggle('pendiente','Pendiente','Completado')}</div>
   `,
   pago_ln: () => `
-    <div class="fhint">🏪 La Nevera pagó a un proveedor por cuenta de 3DUNA — se descuenta de lo que debe</div>
-    <div class="fg"><label class="fl">Proveedor / Concepto</label>
-      <input class="fi" type="text" id="f-con" placeholder="¿Qué pagó La Nevera?"></div>
+    <div class="fhint">La Nevera pagó a un proveedor por cuenta de 3DUNA — se descuenta de lo que debe</div>
+    <div class="fg"><label class="fl">Entidad</label>
+      <input class="fi" type="text" id="f-quien" value="la nevera" readonly style="color:var(--t3);cursor:not-allowed"></div>
+    <div class="fg"><label class="fl">Concepto / Proveedor</label>
+      <input class="fi" type="text" id="f-con" placeholder="¿Qué pagó La Nevera al proveedor?"></div>
     <div class="frow">
       <div class="fg"><label class="fl">Valor (COP)</label><input class="fi" type="number" id="f-val" placeholder="0"></div>
       <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="f-fec"></div>
@@ -659,7 +661,7 @@ const TYPE_FORMS = {
       <div class="fg"><label class="fl">Medio</label><select class="fs" id="f-med"><option value="TRANSF">Transferencia</option><option value="EFECTI">Efectivo</option></select></div>
       <div class="fg"><label class="fl">Código / Ref</label><input class="fi" type="text" id="f-cod" placeholder="Factura, ref..."></div>
     </div>
-    <div class="fg"><label class="fl">¿Ya fue reconocido / descontado?</label>${estadoToggle('pendiente','Pendiente reconocimiento','Descontado')}</div>
+    <div class="fg"><label class="fl">¿Ya fue reconocido / descontado?</label>${estadoToggle('pendiente','Pendiente','Descontado')}</div>
   \`,
   comision: () => \`
     <div class="fhint">Comisión entre La Nevera y 3DUNA por referidos</div>
@@ -747,7 +749,8 @@ async function saveTx(){
   const entry={
     id:editId||uid(),tipo:curTipo,estado:newEstado,
     valor:v,iva:parseFloat(val('f-iva'))||0,
-    quien:val('f-quien'),categoria:val('f-cat'),
+    quien:curTipo==='pago_ln'?'la nevera':val('f-quien'),
+    categoria:val('f-cat'),
     concepto:val('f-con'),fecha:val('f-fec'),
     medio:val('f-med'),codigo:val('f-cod'),
     dir:val('f-dir'),
