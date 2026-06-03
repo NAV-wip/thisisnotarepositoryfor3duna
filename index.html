@@ -316,6 +316,11 @@ async function saveData(silent){
 async function syncNow(){ await loadData(); renderAll(); showToast('✓ Sincronizado'); }
 
 // ── PASSWORD ──
+function showPwdScreen(){
+  $('pwd-wrap').classList.add('show');
+  $('loading').style.display='none';
+  setTimeout(()=>$('pwd-input').focus(),100);
+}
 function showPwdError(msg){ $('pwd-err').textContent=msg; $('pwd-input').value=''; $('pwd-input').focus(); }
 
 async function submitPwd(){
@@ -749,7 +754,7 @@ async async function toggleEstado(id){
   if(t.tipo==='adelanto'&&!t.abono_dir){
     t.reembolsado = t.estado==='pagado';
   }
-  renderAll(); await save();
+  renderAll(); await saveData();
   showToast(t.estado==='pagado'?'✓ Pagado':'↩ Revertido');
 }
 
